@@ -1,0 +1,9 @@
+{
+    "name": "express-rest-example"
+  , "version": "0.0.1"
+  , "private": true
+  , "dependencies": {
+      "express": "2.5.8"
+    , "ejs": ">= 0.0.1"
+  }
+}
