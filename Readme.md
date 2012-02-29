@@ -1,12 +1,17 @@
-#Mongoose-Express-Rest
-    Mongoose Express Rest is a plugin for express to expose mongoose finders as simple crud/rest operations.  The
+#Mers
+ *_Mongoose
+ *_Express
+ *_Rest
+ *_Service
+ 
+    Mers is a plugin for express to expose mongoose finders as simple crud/rest operations.  The
     basic idea being you should just define your model and your finders and the rest should be be magic.
 
 
 ## Usage [usage]
 ```javascript
-    var mer = require('mongoose-express-rest');
-    app.use('/rest', mer({uri:'mongodb://localhost/rest_example_prod'}).rest());
+    var mers = require('mers');
+    app.use('/rest', mers({uri:'mongodb://localhost/rest_example_prod'}).rest());
 ```
 Configuration options include
      uri:
@@ -93,7 +98,7 @@ to send location, though I find that pretty inconvient.
 
 ```javascript
 
-app.use('/rest', require('mongoose-express-rest').rest({
+app.use('/rest', require('mers').rest({
     mongoose:mongoose,
     transformers:{
            renameid:function(Model, label){
@@ -177,24 +182,8 @@ You can transform your results by adding a custom transformer and or adding a ne
 ```
 
 ### Custom ResultStream
-You can create your own result stream. It needs to subclass Stream be writable and needs to have asCallback function.
+You can create your own result stream. It needs to subclass Stream be writable.
 
-```javascript
-
-BufferedJSONStream.prototype.asCallback = function (tostream) {
-    return function (err, obj) {
-        if (err){
-            this.response.error = err;
-            this.status = 1;
-        }else
-            this.response.payload = obj;
-        this.pipe(tostream);
-        tostream.contentType('json');
-        this.end();
-    }.bind(this);
-}
-
-```
 
 ##Examples.
 An example of a customized rest service can be found at
