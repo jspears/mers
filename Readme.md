@@ -5,7 +5,7 @@
  *_Service
  
     Mers is a plugin for express to expose mongoose finders as simple crud/rest operations.  The
-    basic idea being you should just define your model and your finders and the rest should be be magic.
+    basic idea being you should just define your model/finders and the rest should be be magic.
 
 
 ## Usage [usage]
@@ -14,7 +14,7 @@
     app.use('/rest', mers({uri:'mongodb://localhost/rest_example_prod'}).rest());
 ```
 Configuration options include
-     uri:
+     uri://mongoose uri or
      mongoose:mongoose, //your mongoose instance.
      [error][error]:function //your custom error handler.
      responseStream:function //your custom respost stream See: lib/streams.js
@@ -56,7 +56,9 @@ you could then access it at
     http://localhost:3000/rest/blogpost/$id/comments
     http://localhost:3000/rest/blogpost/$id/comments/$id
     http://localhost:3000/rest/blogpost/$id/comments/0
-  
+    http://localhost:3000/rest/blogpost/finder/findTitleLike/term
+    
+    
 ###Pagination
 Pagination is also supported via skip= and limit= query params.
 
@@ -182,7 +184,8 @@ You can transform your results by adding a custom transformer and or adding a ne
 ```
 
 ### Custom ResultStream
-You can create your own result stream. It needs to subclass Stream be writable.
+You can create your own result stream. It needs to subclass Stream and be writable.  This can allow
+for other formats, and preventing the wrapping of data in the payload.
 
 
 ##Examples.
