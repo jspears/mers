@@ -6,9 +6,11 @@ json = JSON.stringify;
 
 before(function onBefore(done) {
     var connection = mongoose.connection;
-    connection.db.dropDatabase(function () {
-        console.log('dropped database [' + connection.name + ']');
-        done();
+    connection.on('open', function () {
+        connection.db.dropDatabase(function () {
+            console.log('dropped database [' + connection.name + ']');
+            done();
+        });
     });
 
 });
@@ -38,8 +40,8 @@ describe('rest', function () {
                 .set('Content-Type', 'application/json')
                 .write(json({
                 title:'Test Blog 1',
-                body: 'Some blogged goodness',
-                date: new Date()
+                body:'Some blogged goodness',
+                date:new Date()
             })).end(function (res) {
                     res.should.be.json
                     res.should.have.status(200);
