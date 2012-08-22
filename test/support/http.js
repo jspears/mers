@@ -3,7 +3,7 @@
  */
 
 var EventEmitter = require('events').EventEmitter
-    , methods = require('express/lib/router/methods')
+    , methods = require('express/node_modules/methods')
     , http = require('http');
 
 module.exports = request;

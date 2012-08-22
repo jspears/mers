@@ -5,6 +5,7 @@ var Mocha = require('mocha'),
 var mocha = new Mocha({
     reporter: 'dot',
     ui: 'bdd',
+   // grep:'should be accessible from an url with an index and use a transformer and single mode is true',
     timeout: 999999
 });
 
