@@ -1,3 +1,4 @@
+[![build status](https://secure.travis-ci.org/jspears/mers.png)](http://travis-ci.org/jspears/mers)
 #Mers
  *_Mongoose
  *_Express
