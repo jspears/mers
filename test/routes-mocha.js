@@ -18,11 +18,14 @@ before(function onBefore(done) {
 describe('rest', function () {
     describe('GET /rest/blogpost', function () {
         it('should return empty list', function (done) {
-            request(app)
-                .get('/rest/blogpost')
-                .end(function (res) {
-                    res.should.have.status(200);
-                    res.should.be.json
+            request(app).get('/rest/blogpost')
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err){
+                        console.log('error', err);
+                    }
+
                     res.should.have.property('body');
                     res.body.should.have.property('payload').with.lengthOf(0);
                     res.body.should.have.property('total', 0);
@@ -38,13 +41,11 @@ describe('rest', function () {
             request(app)
                 .post('/rest/blogpost')
                 .set('Content-Type', 'application/json')
-                .write(json({
+                .send(json({
                 title:'Test Blog 1',
                 body:'Some blogged goodness',
                 date:new Date()
-            })).end(function (res) {
-                    res.should.be.json
-                    res.should.have.status(200);
+            })).expect(200).end(function (err, res) {
                     res.should.have.property('body');
                     res.body.should.have.property('payload');
                     res.body.payload.should.have.property('title', 'Test Blog 1');
@@ -63,12 +64,12 @@ describe('rest', function () {
             request(app)
                 .put('/rest/blogpost/' + id)
                 .set('Content-Type', 'application/json')
-                .write(json({
+                .send(json({
                 comments:[
                     {title:'Very Cool Thing You Have', body:'Do you like my body?'},
                     {title:'I dunno I\'m bored', body:'if you think i\'m sexy'}
                 ]
-            })).end(function (res) {
+            })).end(function (err, res) {
                     res.should.be.json
                     res.should.have.status(200);
                     res.should.have.property('body');
@@ -82,7 +83,7 @@ describe('rest', function () {
 
         });
         it('should be accessible from an url', function (done) {
-            request(app).get('/rest/blogpost/' + id + '/comments/' + cid).end(function (res) {
+            request(app).get('/rest/blogpost/' + id + '/comments/' + cid).end(function (err, res) {
                 res.should.be.json
                 res.should.have.status(200);
                 res.should.have.property('body');
@@ -94,7 +95,7 @@ describe('rest', function () {
 
         });
         it('should be accessible from an url with an index', function (done) {
-            request(app).get('/rest/blogpost/' + id + '/comments/1').end(function (res) {
+            request(app).get('/rest/blogpost/' + id + '/comments/1').end(function (err, res) {
                 res.should.be.json
                 res.should.have.status(200);
                 res.should.have.property('body');
@@ -106,7 +107,7 @@ describe('rest', function () {
 
         });
         it('should be accessible from an url with an index and use a transformer', function (done) {
-            request(app).get('/rest/blogpost/' + id + '/comments/1?transform=labelval').end(function (res) {
+            request(app).get('/rest/blogpost/' + id + '/comments/1?transform=labelval').end(function (err, res) {
 
                 res.should.be.json
                 res.should.have.status(200);
@@ -119,7 +120,7 @@ describe('rest', function () {
 
         });
         it('should be accessible from an url with an index and use a transformer and single mode is false', function (done) {
-            request(app).get('/rest/blogpost/' + id + '/comments/1?transform=labelval&single=false').end(function (res) {
+            request(app).get('/rest/blogpost/' + id + '/comments/1?transform=labelval&single=false').end(function (err, res) {
                 console.log('isArray?', Array.isArray(res.body.payload));
                 res.should.be.json
                 res.should.have.status(200);
@@ -132,7 +133,7 @@ describe('rest', function () {
 
         });
         it('should be accessible from an url with an index and use a transformer and single mode is true', function (done) {
-            request(app).get('/rest/blogpost/' + id + '/comments/1?transform=labelval&single=true').end(function (res) {
+            request(app).get('/rest/blogpost/' + id + '/comments/1?transform=labelval&single=true').end(function (err, res) {
                 res.should.be.json
                 res.should.have.status(200);
                 res.should.have.property('body');
@@ -157,7 +158,7 @@ describe('rest', function () {
     });
     describe('DELETE /rest/blogpost/$id', function () {
         it('should delete the created blog posting', function (done) {
-            request(app).delete('/rest/blogpost/' + id).end(function (res) {
+            request(app).del('/rest/blogpost/' + id).end(function (err, res) {
                 res.should.be.json
                 res.should.have.status(200);
                 res.should.have.property('body');
@@ -167,7 +168,7 @@ describe('rest', function () {
         });
 
         it('should be null because it was deleted', function (done) {
-            request(app).get('/rest/blogpost/' + id).end(function (res) {
+            request(app).get('/rest/blogpost/' + id).end(function (err, res) {
                 res.should.be.json
                 res.should.have.status(200);
                 res.should.have.property('body');
@@ -207,7 +208,7 @@ describe('rest', function () {
         });
 
         it('should be able to skip and limit', function (done) {
-            request(app).get('/rest/blogpost?skip=1&limit=1').end(function (res) {
+            request(app).get('/rest/blogpost?skip=1&limit=1').end(function (err, res) {
                 res.should.be.json
                 res.should.have.status(200);
                 res.should.have.property('body');
@@ -217,7 +218,7 @@ describe('rest', function () {
             });
         });
         it('should come back in reverse title order', function (done) {
-            request(app).get('/rest/blogpost?sort=title:-1').end(function (res) {
+            request(app).get('/rest/blogpost?sort=title:-1').end(function (err, res) {
                 res.should.be.json
                 res.should.have.status(200);
                 res.should.have.property('body');
@@ -228,7 +229,7 @@ describe('rest', function () {
 
         });
         it('2 should come back in reverse title order filtered by C', function (done) {
-            request(app).get('/rest/blogpost?sort=title:-1,date:1&filter[title]=C').end(function (res) {
+            request(app).get('/rest/blogpost?sort=title:-1,date:1&filter[title]=C').end(function (err, res) {
                 res.should.be.json
                 res.should.have.status(200);
                 res.should.have.property('body');
@@ -239,7 +240,7 @@ describe('rest', function () {
 
         });
         it('2 should come back in reverse title order filtered by C in label in labelval from', function (done) {
-            request(app).get('/rest/blogpost?sort=title:-1,date:1&filter[title]=C&transform=labelval').end(function (res) {
+            request(app).get('/rest/blogpost?sort=title:-1,date:1&filter[title]=C&transform=labelval').end(function (err, res) {
                 res.should.be.json
                 res.should.have.status(200);
                 res.should.have.property('body');
@@ -254,7 +255,7 @@ describe('rest', function () {
 
         });
         it('should return post c ', function (done) {
-            request(app).get('/rest/blogpost/finder/findTitleLike?title=c').end(function (res) {
+            request(app).get('/rest/blogpost/finder/findTitleLike?title=c').end(function (err, res) {
                 res.should.be.json
                 res.should.have.status(200);
                 res.should.have.property('body');
@@ -267,7 +268,7 @@ describe('rest', function () {
             });
         })
         it('should return post c ', function (done) {
-            request(app).get('/rest/blogpost/finder/findTitleLike?title=Post&filter[title]=C').end(function (res) {
+            request(app).get('/rest/blogpost/finder/findTitleLike?title=Post&filter[title]=C').end(function (err, res) {
                 res.should.be.json
                 res.should.have.status(200);
                 res.should.have.property('body');
@@ -280,7 +281,7 @@ describe('rest', function () {
             });
         })
         it('should return post c using resty interface ', function (done) {
-            request(app).get('/rest/blogpost/finder/findTitleLike/Post?filter[title]=C').end(function (res) {
+            request(app).get('/rest/blogpost/finder/findTitleLike/Post?filter[title]=C').end(function (err, res) {
                 res.should.be.json
                 res.should.have.status(200);
                 res.should.have.property('body');
@@ -294,7 +295,7 @@ describe('rest', function () {
         })
         describe('should handle errors without crashing when calling an invalid id', function () {
             it('should not crash', function (done) {
-                request(app).get('/rest/blogpost/junk').end(function (res) {
+                request(app).get('/rest/blogpost/junk').end(function (err, res) {
                     res.should.have.status(200);
                     res.body.should.have.property('status', 1)
                     res.body.should.have.property('error', 'Invalid ObjectId');
@@ -302,7 +303,7 @@ describe('rest', function () {
                 });
             })
             it('should not crash', function (done) {
-                request(app).get('/rest/blogpost/').end(function (res) {
+                request(app).get('/rest/blogpost/').end(function (err, res) {
                     res.should.have.status(200);
 
                     done();
@@ -322,8 +323,8 @@ describe('rest', function () {
         request(app)
             .post('/rest/blogpost')
             .set('Content-Type', 'application/json')
-            .write(json(_u.extend({ date:new Date() }, opts))).end(
-            function (res) {
+            .send(json(_u.extend({ date:new Date() }, opts))).end(
+            function (err, res) {
                 cb(res.body);
             });
     }

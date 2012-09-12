@@ -10,7 +10,8 @@
     "devDependencies":{
         "express":">= 2.5.8",
         "mocha":"latest",
-        "should":"latest"
+        "should":"latest",
+        "supertest":"latest"
     },
     "scripts":{
         "test":"./node_modules/mocha/bin/mocha --reporter spec test/*-mocha.js"
