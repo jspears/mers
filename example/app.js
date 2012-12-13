@@ -1,3 +1,3 @@
 var app = require('./server');
 app.listen(3001);
-console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
+console.log("Express server listening on port 3001 in %s mode", app.settings.env);

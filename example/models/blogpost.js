@@ -1,8 +1,8 @@
-var mongoose = require('mongoose'), Schema = mongoose.Schema,
-    ObjectId = mongoose.Schema.ObjectId;
+var mongoose = require('mongoose'), Schema = mongoose.Schema, CallbackQuery = require('mers/lib/callback-query');
+ObjectId = mongoose.Schema.ObjectId;
 
 var CommentSchema = new Schema({
-    title:String, body:String, date:Date
+    title:String, body:String, comment:String, date:Date
 });
 
 
@@ -29,6 +29,31 @@ BlogPostSchema.methods.findCommentsLike = function (q, term) {
     var search = term || q.title;
     return this.find({comments:new RegExp(search, 'i')});
 }
+
+/**
+ * Shows how to create a raw mongodb query and use it within mers.  This
+ * could also be used to use a non mongodb data source.
+ * @param q
+ * @return {Function}
+ */
+BlogPostSchema.statics.findRaw = function onFindRaw(q) {
+    var collection = this.collection;
+    return new CallbackQuery(function (cb) {
+        collection.find(function (err, cursor) {
+            if (err) return cb(err);
+            cursor.toArray(function (err, docs) {
+                cb(err, docs);
+            });
+        });
+
+    });
+}
+/**
+ * This is just an example, if this proves useful, may make it part of mers.
+ * @param q
+ * @param collection
+ * @constructor
+ */
 
 var Comment = module.exports.Comment = mongoose.model('Comment', CommentSchema);
 var BlogPost = module.exports.BlogPost = mongoose.model('BlogPost', BlogPostSchema);

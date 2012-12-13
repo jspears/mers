@@ -22,9 +22,9 @@ describe('rest', function () {
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .end(function (err, res) {
-                    if (err){
-                        console.log('error', err);
-                    }
+                    if (err)
+                        console.log('ERROR', arguments);
+
 
                     res.should.have.property('body');
                     res.body.should.have.property('payload').with.lengthOf(0);
@@ -46,6 +46,9 @@ describe('rest', function () {
                 body:'Some blogged goodness',
                 date:new Date()
             })).expect(200).end(function (err, res) {
+                    if (err)
+                        console.log('ERROR', arguments);
+
                     res.should.have.property('body');
                     res.body.should.have.property('payload');
                     res.body.payload.should.have.property('title', 'Test Blog 1');
@@ -57,7 +60,8 @@ describe('rest', function () {
 
         });
     });
-    describe('PUT /rest/blogpost/id', function () {
+
+    describe('testing  /rest/blogpost', function () {
         var cid;
         it('should add 2 comments to the blog post', function (done) {
 
@@ -70,6 +74,8 @@ describe('rest', function () {
                     {title:'I dunno I\'m bored', body:'if you think i\'m sexy'}
                 ]
             })).end(function (err, res) {
+                    if (err)
+                        console.log('ERROR', arguments);
                     res.should.be.json
                     res.should.have.status(200);
                     res.should.have.property('body');
@@ -121,7 +127,6 @@ describe('rest', function () {
         });
         it('should be accessible from an url with an index and use a transformer and single mode is false', function (done) {
             request(app).get('/rest/blogpost/' + id + '/comments/1?transform=labelval&single=false').end(function (err, res) {
-                console.log('isArray?', Array.isArray(res.body.payload));
                 res.should.be.json
                 res.should.have.status(200);
                 res.should.have.property('body');
@@ -139,6 +144,19 @@ describe('rest', function () {
                 res.should.have.property('body');
                 res.body.should.have.property('payload');
                 res.body.payload.should.have.property("val", cid);
+                done();
+            });
+
+        });
+        it('should be accessible from an url with an index and use a transform FUNCTION in the request', function (done) {
+            request(app).get('/space/test/').end(function (err, res) {
+                if (err)
+                    console.log('ERROR', err, res.body);
+                //res.should.be.json
+                res.should.have.status(200);
+                res.should.have.property('body');
+                res.body.should.have.property('payload');
+                res.body.payload[0].should.have.property("junk", true);
                 done();
             });
 
@@ -183,19 +201,19 @@ describe('rest', function () {
     describe('GET /rest/blogpost with search options', function () {
         var pids = [];
         it('sets up post A for testing', function (done) {
-            createPost({title:'Post A'}, function (e) {
+            createPost({title:'Post A', body:'A'}, function (e) {
                 pids.push(e.payload._id);
                 done();
             });
         });
         it('sets up post B for testing', function (done) {
-            createPost({title:'Post B'}, function (e) {
+            createPost({title:'Post B', body:'B'}, function (e) {
                 pids.push(e.payload._id);
                 done();
             });
         });
         it('sets up post C for testing', function (done) {
-            createPost({title:'Post C'}, function (e) {
+            createPost({title:'Post C', body:'C'}, function (e) {
                 pids.push(e.payload._id);
                 done();
             });
@@ -239,7 +257,7 @@ describe('rest', function () {
             });
 
         });
-        it('2 should come back in reverse title order filtered by C in label in labelval from', function (done) {
+        it('2 should come back in reverse title order filtered by C in label in labelval form', function (done) {
             request(app).get('/rest/blogpost?sort=title:-1,date:1&filter[title]=C&transform=labelval').end(function (err, res) {
                 res.should.be.json
                 res.should.have.status(200);
@@ -249,6 +267,21 @@ describe('rest', function () {
                 res.body.payload[1].should.have.property('label', 'Post C');
                 res.body.should.have.property('total', 4);
                 res.body.should.have.property('filterTotal', 2);
+
+                done();
+            });
+
+        });
+        it('1 should come back in reverse title order filtered by -title=C and body=A', function (done) {
+            request(app).get('/rest/blogpost?sort=title:-1,date:1&filter[-title]=C&filter[body]=A').end(function (err, res) {
+
+                res.should.be.json
+                res.should.have.status(200);
+                res.body.payload.should.have.lengthOf(1);
+                res.body.payload[0].should.have.property('title', 'Post A');
+             //   res.body.payload[1].should.have.property('label', 'Post B');
+                res.body.should.have.property('total', 4);
+                res.body.should.have.property('filterTotal', 1);
 
                 done();
             });
@@ -293,12 +326,13 @@ describe('rest', function () {
                 done();
             });
         })
+
         describe('should handle errors without crashing when calling an invalid id', function () {
             it('should not crash', function (done) {
                 request(app).get('/rest/blogpost/junk').end(function (err, res) {
                     res.should.have.status(200);
                     res.body.should.have.property('status', 1)
-                    res.body.should.have.property('error', 'Invalid ObjectId');
+                    res.body.should.have.property('error');
                     done();
                 });
             })
@@ -309,6 +343,20 @@ describe('rest', function () {
                     done();
                 });
             })
+        })
+
+        describe('make a raw mongodb call', function () {
+            it('should not crash', function (done) {
+                request(app).get('/rest/blogpost/finder/findRaw').end(function (err, res) {
+                    if (err)
+                        console.log('err', err, res);
+                    res.should.have.status(200);
+                    res.body.should.have.property('status', 0)
+
+                    done();
+                });
+            })
+
         })
     });
     var t = 0;
