@@ -287,6 +287,7 @@ describe('rest', function () {
             });
 
         });
+
         it('should return post c ', function (done) {
             request(app).get('/rest/blogpost/finder/findTitleLike?title=c').end(function (err, res) {
                 res.should.be.json

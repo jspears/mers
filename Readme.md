@@ -81,6 +81,12 @@ Filtering is available for strings. To find all the blog posts with C in the tit
 
     http://localhost:3000/rest/blogpost?filter[title]=C
 
+Also you can and or nor the filters by using + (and) - (nor)  or nothing or
+    http://localhost:3000/rest/blogpost?filter[-title]=C
+    http://localhost:3000/rest/blogpost?filter[+title]=C&filter[-body]=A
+
+
+
 To filter all String fields that have a C in them
 
     http://localhost:3000/rest/blogpost?filter=C
