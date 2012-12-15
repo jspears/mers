@@ -5,7 +5,7 @@ assert = require('assert');
 json = JSON.stringify;
 
 before(function onBefore(done) {
-    var connection = mongoose.connection;
+    var connection = mongoose.connection
     connection.on('open', function () {
         connection.db.dropDatabase(function () {
             console.log('dropped database [' + connection.name + ']');
