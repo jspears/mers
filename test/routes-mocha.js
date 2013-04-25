@@ -1,8 +1,8 @@
 process.env.NODE_ENV = 'test';
 require('should');
 var app = require('../example/server.js'), request = require('./support/http'), mongoose = require('mongoose'), _u = require('underscore');
-assert = require('assert');
-json = JSON.stringify;
+var assert = require('assert');
+var json = JSON.stringify;
 
 before(function onBefore(done) {
     var connection = mongoose.connection

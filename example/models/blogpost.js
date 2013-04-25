@@ -1,4 +1,4 @@
-var mongoose = require('mongoose'), Schema = mongoose.Schema, CallbackQuery = require('mers/lib/callback-query');
+var mongoose = require('mongoose'), Schema = mongoose.Schema, CallbackQuery = require('../../lib/callback-query');
 ObjectId = mongoose.Schema.ObjectId;
 
 var CommentSchema = new Schema({
