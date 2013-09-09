@@ -101,10 +101,29 @@ describe('rest', function () {
                     res.should.have.status(200);
                     res.should.have.property('body');
                     res.body.should.have.property('payload');
-                    res.body.payload.should.have.property('comments');
-                    res.body.payload.comments.should.have.lengthOf(2);
-                    res.body.payload.comments[1].should.have.property('title', 'Yup');
-                    cid = res.body.payload.comments[1]._id;
+                    res.body.payload.should.have.property('title', 'Yup');
+
+                    done();
+
+                });
+
+        });
+        it('post comments to the blogpost', function (done) {
+
+            request(app)
+                .post('/rest/blogpost/' + id+'/comments/')
+                .set('Content-Type', 'application/json')
+                .send(json(
+                    {title:'YupYup', body:'Do you like my body?'}
+                )).end(function (err, res) {
+                    if (err)
+                        console.log('ERROR', err.message, err.stack);
+
+                    res.should.have.status(200);
+                    res.should.have.property('body');
+                    res.body.should.have.property('payload');
+                    res.body.payload.should.have.lengthOf(3);
+                    res.body.payload[2].should.have.property('title', 'YupYup');
 
                     done();
 
