@@ -7,7 +7,7 @@ var CommentSchema = new Schema({
 
 
 var BlogPostSchema = new Schema({
-    author:ObjectId, title:String, body:String, buf:Buffer, date:Date, comments:[CommentSchema], meta:{
+         title:String, body:String, buf:Buffer, date:Date, comments:[CommentSchema], meta:{
         votes:Number, favs:Number
     }
 });

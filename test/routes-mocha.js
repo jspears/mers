@@ -76,7 +76,6 @@ describe('rest', function () {
             })).end(function (err, res) {
                     if (err)
                         console.log('ERROR', arguments);
-                    res.should.be.json
                     res.should.have.status(200);
                     res.should.have.property('body');
                     res.body.should.have.property('payload');
@@ -88,9 +87,33 @@ describe('rest', function () {
                 });
 
         });
+        it('put comments[1] to the blogpost', function (done) {
+
+            request(app)
+                .put('/rest/blogpost/' + id+'/comments/1')
+                .set('Content-Type', 'application/json')
+                .send(json(
+                        {title:'Yup', body:'Do you like my body?'}
+                )).end(function (err, res) {
+                    if (err)
+                        console.log('ERROR', err.message, err.stack);
+
+                    res.should.have.status(200);
+                    res.should.have.property('body');
+                    res.body.should.have.property('payload');
+                    res.body.payload.should.have.property('comments');
+                    res.body.payload.comments.should.have.lengthOf(2);
+                    res.body.payload.comments[1].should.have.property('title', 'Yup');
+                    cid = res.body.payload.comments[1]._id;
+
+                    done();
+
+                });
+
+        });
         it('should be accessible from an url', function (done) {
             request(app).get('/rest/blogpost/' + id + '/comments/' + cid).end(function (err, res) {
-                res.should.be.json
+
                 res.should.have.status(200);
                 res.should.have.property('body');
                 res.body.should.have.property('payload');
@@ -102,7 +125,7 @@ describe('rest', function () {
         });
         it('should be accessible from an url with an index', function (done) {
             request(app).get('/rest/blogpost/' + id + '/comments/1').end(function (err, res) {
-                res.should.be.json
+
                 res.should.have.status(200);
                 res.should.have.property('body');
                 res.body.should.have.property('payload');
@@ -115,7 +138,7 @@ describe('rest', function () {
         it('should be accessible from an url with an index and use a transformer', function (done) {
             request(app).get('/rest/blogpost/' + id + '/comments/1?transform=labelval').end(function (err, res) {
 
-                res.should.be.json
+
                 res.should.have.status(200);
                 res.should.have.property('body');
                 res.body.should.have.property('payload');
@@ -127,7 +150,7 @@ describe('rest', function () {
         });
         it('should be accessible from an url with an index and use a transformer and single mode is false', function (done) {
             request(app).get('/rest/blogpost/' + id + '/comments/1?transform=labelval&single=false').end(function (err, res) {
-                res.should.be.json
+
                 res.should.have.status(200);
                 res.should.have.property('body');
                 res.body.should.have.property('payload');
@@ -139,7 +162,7 @@ describe('rest', function () {
         });
         it('should be accessible from an url with an index and use a transformer and single mode is true', function (done) {
             request(app).get('/rest/blogpost/' + id + '/comments/1?transform=labelval&single=true').end(function (err, res) {
-                res.should.be.json
+
                 res.should.have.status(200);
                 res.should.have.property('body');
                 res.body.should.have.property('payload');
@@ -163,7 +186,7 @@ describe('rest', function () {
         });
 //        it('should be possible to populate comments', function (done) {
 //            request(app).get('/rest/blogpost/' + id + '?populate[comments]=title,_id').end(function (res) {
-//                res.should.be.json
+//
 //                res.should.have.status(200);
 //                res.body.should.have.property('payload');
 //                res.body.payload[0].should.have.property("_id");
@@ -177,7 +200,7 @@ describe('rest', function () {
     describe('DELETE /rest/blogpost/$id', function () {
         it('should delete the created blog posting', function (done) {
             request(app).del('/rest/blogpost/' + id).end(function (err, res) {
-                res.should.be.json
+
                 res.should.have.status(200);
                 res.should.have.property('body');
                 res.body.should.have.property('status', 0);
@@ -187,7 +210,7 @@ describe('rest', function () {
 
         it('should be null because it was deleted', function (done) {
             request(app).get('/rest/blogpost/' + id).end(function (err, res) {
-                res.should.be.json
+
                 res.should.have.status(200);
                 res.should.have.property('body');
                 //TODO - technically this should return null, however the get part can't really tell if the query is nothing or expecting a return changing this to ?single=true would fix it
@@ -227,7 +250,7 @@ describe('rest', function () {
 
         it('should be able to skip and limit', function (done) {
             request(app).get('/rest/blogpost?skip=1&limit=1').end(function (err, res) {
-                res.should.be.json
+
                 res.should.have.status(200);
                 res.should.have.property('body');
                 res.body.should.have.property('payload').with.lengthOf(1);
@@ -237,7 +260,7 @@ describe('rest', function () {
         });
         it('should come back in reverse title order', function (done) {
             request(app).get('/rest/blogpost?sort=title:-1').end(function (err, res) {
-                res.should.be.json
+
                 res.should.have.status(200);
                 res.should.have.property('body');
                 res.body.should.have.property('payload').with.lengthOf(4);
@@ -248,7 +271,7 @@ describe('rest', function () {
         });
         it('2 should come back in reverse title order filtered by C', function (done) {
             request(app).get('/rest/blogpost?sort=title:-1,date:1&filter[title]=C').end(function (err, res) {
-                res.should.be.json
+
                 res.should.have.status(200);
                 res.should.have.property('body');
                 res.body.payload.should.have.lengthOf(2);
@@ -259,7 +282,7 @@ describe('rest', function () {
         });
         it('2 should come back in reverse title order filtered by C in label in labelval form', function (done) {
             request(app).get('/rest/blogpost?sort=title:-1,date:1&filter[title]=C&transform=labelval').end(function (err, res) {
-                res.should.be.json
+
                 res.should.have.status(200);
                 res.should.have.property('body');
                 res.body.payload.should.have.lengthOf(2);
@@ -275,7 +298,7 @@ describe('rest', function () {
         it('1 should come back in reverse title order filtered by -title=C and body=A', function (done) {
             request(app).get('/rest/blogpost?sort=title:-1,date:1&filter[-title]=C&filter[body]=A').end(function (err, res) {
 
-                res.should.be.json
+
                 res.should.have.status(200);
                 res.body.payload.should.have.lengthOf(1);
                 res.body.payload[0].should.have.property('title', 'Post A');
@@ -290,7 +313,7 @@ describe('rest', function () {
 
         it('should return post c ', function (done) {
             request(app).get('/rest/blogpost/finder/findTitleLike?title=c').end(function (err, res) {
-                res.should.be.json
+
                 res.should.have.status(200);
                 res.should.have.property('body');
                 res.body.payload.should.have.lengthOf(2);
@@ -303,7 +326,7 @@ describe('rest', function () {
         })
         it('should return post c ', function (done) {
             request(app).get('/rest/blogpost/finder/findTitleLike?title=Post&filter[title]=C').end(function (err, res) {
-                res.should.be.json
+
                 res.should.have.status(200);
                 res.should.have.property('body');
                 res.body.payload.should.have.lengthOf(2);
@@ -316,7 +339,7 @@ describe('rest', function () {
         })
         it('should return post c using resty interface ', function (done) {
             request(app).get('/rest/blogpost/finder/findTitleLike/Post?filter[title]=C').end(function (err, res) {
-                res.should.be.json
+
                 res.should.have.status(200);
                 res.should.have.property('body');
                 res.body.payload.should.have.lengthOf(2);
