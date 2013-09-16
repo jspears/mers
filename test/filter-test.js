@@ -8,34 +8,30 @@ var express = require('express'),
     app = express();
 
 var UserSchema = new Schema({
-    username:{type:String, required:true, unique:true, index:true},
-    score:{type:Number},
-    meta:{
-        created:{
-            type:Date
+    username: {type: String, required: true, unique: true, index: true},
+    score: {type: Number},
+    meta: {
+        created: {
+            type: Date
         }
     }
 });
 
 var User = mongoose.model('User', UserSchema);
-app.use(express.bodyParser());
-app.use(express.methodOverride());
-app.use('/rest', rest({ mongoose:mongoose }).rest())
-var connection = mongoose.connection;
-
 module.exports.setUp = function (done) {
-    connection.on('open', function () {
-        connection.db.dropDatabase(function () {
-            console.log('dropped database [' + connection.name + ']');
-            done();
-        });
-    })
-    mongoose.connect('mongodb://localhost/user_example_rest', function(){
-        create(create(create(create(create(function(){
-            console.log('done creating users')
-        })))));
 
-    });
+    var connection = mongoose.connection;
+    mongoose.connect('mongodb://localhost/user_example_rest');
+    create(create(create(create(create(function () {
+        console.log('done creating users')
+        done();
+    })))));
+
+    app.use(express.bodyParser());
+    app.use(express.methodOverride());
+    app.use('/rest', rest({ mongoose: mongoose }).rest())
+
+
 }
 var d = new Date();
 function date(offset) {
@@ -46,10 +42,10 @@ var usernames = ['abc', 'def', 'acc', 'dff']
 function create(done) {
     return function () {
         var u = new User({
-            username:usernames[score % usernames.length],
-            score:score++,
-            meta:{
-                created:date(-10000 * score)
+            username: usernames[score % usernames.length],
+            score: score++,
+            meta: {
+                created: date(-10000 * score)
             }
         });
         mongoose.save(u, done);
@@ -83,10 +79,10 @@ module.exports.testFilterGtNumber = function (test) {
             console.log('response', res.body);
             res.body.should.have.property('status', 0);
             var payload = res.body.should.have.property('payload').obj;
-
+            test.ok(true);
             test.done();
 
-        })
+        });
 };
 module.exports.testFilterltNumber = function (test) {
     request(app)
@@ -102,7 +98,7 @@ module.exports.testFilterltNumber = function (test) {
 };
 module.exports.testFilterltDate = function (test) {
     request(app)
-        .get("/rest/User?filter[meta][created]=<"+(new Date().toJSON()))
+        .get("/rest/User?filter[meta][created]=<" + (new Date().toJSON()))
         .expect(200).end(function (err, res) {
             console.log('response', res.body);
             res.body.should.have.property('status', 0);

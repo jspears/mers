@@ -5,8 +5,8 @@ var assert = require('assert');
 var json = JSON.stringify;
 
 before(function onBefore(done) {
-    var connection = mongoose.connection
-    connection.on('open', function () {
+    var connection = app.locals.mers.conn;
+    connection.on('connected', function () {
         connection.db.dropDatabase(function () {
             console.log('dropped database [' + connection.name + ']');
             done();
