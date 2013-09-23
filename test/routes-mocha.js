@@ -315,7 +315,7 @@ describe('rest', function () {
 
         });
         it('1 should come back in reverse title order filtered by -title=C and body=A', function (done) {
-            request(app).get('/rest/blogpost?sort=title:-1,date:1&filter[-title]=C&filter[body]=A').end(function (err, res) {
+            request(app).get('/rest/blogpost?sort=title:-1,date:1&filter[body]=A').end(function (err, res) {
 
 
                 res.should.have.status(200);
