@@ -17,7 +17,7 @@ Configuration options include:
 * uri://mongoose uri (as shown above)
 * mongoose:mongoose, (your mongoose instance)
 * [error][error]:function (your custom error handler)
-* responseStream:function (your custom respost stream See: lib/streams.js)
+* responseStream:function (your custom respost stream. See: lib/streams.js)
 * transformer:function (your custom transformer factory)
 
 
