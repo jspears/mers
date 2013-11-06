@@ -14,11 +14,11 @@
     app.use('/rest', mers({uri:'mongodb://localhost/rest_example_prod'}).rest());
 ```
 Configuration options include
-     * uri://mongoose uri
-     * mongoose:mongoose, //your mongoose instance.
-     * [error][error]:function //your custom error handler.
-     * responseStream:function //your custom respost stream See: lib/streams.js
-     * transformer:function //your custom transformer factory
+* uri://mongoose uri
+* mongoose:mongoose, //your mongoose instance.
+* [error][error]:function //your custom error handler.
+* responseStream:function //your custom respost stream See: lib/streams.js
+* transformer:function //your custom transformer factory
 
 
 ###If you had a schema such as
