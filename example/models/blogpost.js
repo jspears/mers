@@ -7,7 +7,15 @@ var CommentSchema = new Schema({
 
 
 var BlogPostSchema = new Schema({
-         title:String, body:String, buf:Buffer, date:Date, comments:[CommentSchema], meta:{
+    title: {
+        type: String,
+        match: new RegExp('^.{3,}$')
+    },
+    body:String,
+    buf: Buffer,
+    date: Date,
+    comments: [CommentSchema],
+    meta:{
         votes:Number, favs:Number
     }
 });
