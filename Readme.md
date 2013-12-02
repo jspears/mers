@@ -189,6 +189,21 @@ You can transform your results by adding a custom transformer and or adding a ne
 
 ```
 
+### Selecting
+Selecting support is upcoming, but for now you can do it in finders
+
+```javascript
+ var User = new Schema({
+   username:String,
+   birthdate:Date
+ });
+ User.statics.selectJustIdAndUsername  = function(){
+  this.find({}).select('_id username');
+ }
+
+```
+
+
 ### Custom ResultStream
 You can create your own result stream. It needs to subclass Stream and be writable.  This can allow
 for other formats, and preventing the wrapping of data in the payload.
