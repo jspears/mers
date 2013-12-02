@@ -130,6 +130,19 @@ describe('rest', function () {
                 });
 
         });
+        it('should not crash on invalid PUT', function (done) {
+            request(app)
+                .put('/rest/blogpost/' + id)
+                .set('Content-Type', 'application/json')
+                .send(json(
+                    {title:'No'}
+                )).end(function (err, res) {
+                    res.should.have.status(200);
+                    res.body.should.have.property('status', 1)
+                    res.body.should.have.property('message', 'Validation failed');
+                    done();
+                });
+        })
         it('should be accessible from an url', function (done) {
             request(app).get('/rest/blogpost/' + id + '/comments/' + cid).end(function (err, res) {
 
