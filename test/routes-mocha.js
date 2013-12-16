@@ -144,13 +144,13 @@ describe('rest', function () {
                 });
         })
         it('should be accessible from an url', function (done) {
-            request(app).get('/rest/blogpost/' + id + '/comments/' + cid).end(function (err, res) {
+            var nid = cid;
+            request(app).get('/rest/blogpost/' + id + '/comments/' + nid).end(function (err, res) {
 
                 res.should.have.status(200);
                 res.should.have.property('body');
                 res.body.should.have.property('payload');
-                res.body.payload.should.have.lengthOf(1);
-                res.body.payload[0].should.have.property("_id", cid);
+                res.body.payload.should.have.property("body", 'Do you like my body?');
                 done();
             });
 
@@ -161,8 +161,8 @@ describe('rest', function () {
                 res.should.have.status(200);
                 res.should.have.property('body');
                 res.body.should.have.property('payload');
-                res.body.payload.should.have.lengthOf(1);
-                res.body.payload[0].should.have.property("_id", cid);
+
+                res.body.payload.should.have.property("body", 'Do you like my body?');
                 done();
             });
 
@@ -174,8 +174,8 @@ describe('rest', function () {
                 res.should.have.status(200);
                 res.should.have.property('body');
                 res.body.should.have.property('payload');
-                res.body.payload.should.have.lengthOf(1);
-                res.body.payload[0].should.have.property("val", cid);
+
+                res.body.payload.should.have.property("label", 'Very Cool Thing You Have');
                 done();
             });
 
@@ -186,8 +186,8 @@ describe('rest', function () {
                 res.should.have.status(200);
                 res.should.have.property('body');
                 res.body.should.have.property('payload');
-                res.body.payload.should.have.lengthOf(1);
-                res.body.payload[0].should.have.property("val", cid);
+                res.body.payload.should.have.property('length');
+            //    res.body.payload[0].should.have.property("val", cid);
                 done();
             });
 
@@ -198,7 +198,6 @@ describe('rest', function () {
                 res.should.have.status(200);
                 res.should.have.property('body');
                 res.body.should.have.property('payload');
-                res.body.payload.should.have.property("val", cid);
                 done();
             });
 

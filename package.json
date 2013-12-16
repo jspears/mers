@@ -11,7 +11,8 @@
     "express": ">= 3.0.0rc4",
     "mocha": "latest",
     "should": "latest",
-    "supertest": "latest"
+    "supertest": "latest",
+    "pow-mongoose-fixtures":"latest"
   },
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha --reporter spec test/*-mocha.js"
