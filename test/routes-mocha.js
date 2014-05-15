@@ -122,8 +122,8 @@ describe('rest', function () {
                     res.should.have.status(200);
                     res.should.have.property('body');
                     res.body.should.have.property('payload');
-                    res.body.payload.should.have.lengthOf(3);
-                    res.body.payload[2].should.have.property('title', 'YupYup');
+        //            res.body.payload.should.have.lengthOf(3);
+                    res.body.payload.should.have.property('title', 'YupYup');
 
                     done();
 
