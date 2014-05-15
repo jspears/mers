@@ -1,10 +1,10 @@
 var mongoose = require('mongoose'), Schema = mongoose.Schema, CallbackQuery = require('../../lib/callback-query');
 ObjectId = mongoose.Schema.ObjectId;
 
-var CommentSchema = new Schema({
-    title:String, body:String, comment:String, date:Date
+var CommentSchema = new Schema();
+CommentSchema.add({
+    title:String, body:String, comment:String, date:Date, posts:[CommentSchema]
 });
-
 
 var BlogPostSchema = new Schema({
     title: {
