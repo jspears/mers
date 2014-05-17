@@ -236,6 +236,101 @@ describe('routes', function () {
             });
         });
     });
+
+    describe('update a nested array', function () {
+        it('put should update a nested array', function (done) {
+            createPost({
+                title: 'Post F',
+                body: 'Should be deep',
+                comments: [
+                    {
+                        title: 'hello', body: 'world', comment: 'im here', posts: [
+                        {
+                            title: 'hello2', body: 'world2', comment: 'im here',
+                            posts: [
+                                {
+                                    title: 'hello2-3', body: 'world2-3', comment: 'im here'
+                                }
+                            ]
+                        },
+                        {
+                            title: 'hello3', body: 'world3', comment: 'im here',
+                            posts: [
+                                {
+                                    title: 'hello3-3', body: 'world3-3', comment: 'im here'
+                                },
+                                {
+                                    title: 'hello3-4', body: 'world3-4'
+                                }
+                            ]
+                        }
+                    ]
+                    },
+                    { title: 'comment 2', body: 'comment2'}
+                ]
+
+            }, function (post) {
+                request(app).put('/rest/blogpost/' + post._id + '/comments/0/posts/1').set('Content-Type', 'application/json')
+                    .send(json(
+                        {title: 'YupYup', body: 'Do you like my body?'}
+                    )).end(function (err, res) {
+                        request(app).get('/rest/blogpost/' + post._id + '/comments/0/posts/').end(function (err, res) {
+                            var payload = res.body.should.have.property('payload').obj;
+                            payload.should.have.lengthOf(2);
+                            payload[1].should.have.property('title', 'YupYup');
+                            done();
+
+                        });
+                    });
+            });
+        });
+        it('post should insert a nested array', function (done) {
+            createPost({
+                title: 'Post F',
+                body: 'Should be deep',
+                comments: [
+                    {
+                        title: 'hello', body: 'world', comment: 'im here', posts: [
+                        {
+                            title: 'hello2', body: 'world2', comment: 'im here',
+                            posts: [
+                                {
+                                    title: 'hello2-3', body: 'world2-3', comment: 'im here'
+                                }
+                            ]
+                        },
+                        {
+                            title: 'hello3', body: 'world3', comment: 'im here',
+                            posts: [
+                                {
+                                    title: 'hello3-3', body: 'world3-3', comment: 'im here'
+                                },
+                                {
+                                    title: 'hello3-4', body: 'world3-4'
+                                }
+                            ]
+                        }
+                    ]
+                    },
+                    { title: 'comment 2', body: 'comment2'}
+                ]
+
+            }, function (post) {
+                request(app).post('/rest/blogpost/' + post._id + '/comments/0/posts/').set('Content-Type', 'application/json')
+                    .send(json(
+                        {title: 'YupYup', body: 'Do you like my body?'}
+                    )).end(function (err, res) {
+                        request(app).get('/rest/blogpost/' + post._id + '/comments/0/posts/').end(function (err, res) {
+                            var payload = res.body.should.have.property('payload').obj;
+                            payload.should.have.lengthOf(3);
+                            payload[2].should.have.property('title', 'YupYup');
+                            done();
+
+                        });
+                    });
+            });
+        });
+    });
 });
 var t = 0;
 
