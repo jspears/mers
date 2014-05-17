@@ -330,6 +330,49 @@ describe('routes', function () {
                     });
             });
         });
+        it('post should find a nested array byid', function (done) {
+            createPost({
+                title: 'Post F',
+                body: 'Should be deep',
+                comments: [
+                    {
+                        title: 'hello', body: 'world', comment: 'im here', posts: [
+                        {
+                            title: 'hello2', body: 'world2', comment: 'im here',
+                            posts: [
+                                {
+                                    title: 'hello2-3', body: 'world2-3', comment: 'im here'
+                                }
+                            ]
+                        },
+                        {
+                            title: 'hello3', body: 'world3', comment: 'im here',
+                            posts: [
+                                {
+                                    title: 'hello3-3', body: 'world3-3', comment: 'im here'
+                                },
+                                {
+                                    title: 'hello3-4', body: 'world3-4'
+                                }
+                            ]
+                        }
+                    ]
+                    },
+                    { title: 'comment 2', body: 'comment2'}
+                ]
+
+            }, function (post) {
+                var c = post.comments[0], p = c.posts[0];
+                request(app).get('/rest/blogpost/' + post._id + '/comments/' + c._id + '/posts/' + p._id).set('Content-Type', 'application/json')
+                    .end(function (err, res) {
+                        var payload = res.body.should.have.property('payload').obj;
+                        payload.should.have.property('_id', p._id);
+                        done();
+
+
+                    });
+            });
+        });
     });
 });
 var t = 0;

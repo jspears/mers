@@ -16,6 +16,14 @@ var EmployeeSchema = new Schema({
         required: true,
         trim: true
     }});
+var GroupSchema = new Schema();
+
+GroupSchema.add({
+    name:String,
+    employees:[{type: Schema.Types.ObjectId, ref:'Employee'}],
+    owner:{type: Schema.Types.ObjectId, ref:'Employee'},
+    groups:[GroupSchema]
+})
 
 var DepartmentSchema = new Schema({
     name: {
@@ -29,7 +37,7 @@ var DepartmentSchema = new Schema({
     employees: [EmployeeSchema]
 });
 var mongoose = mmongoose.createConnection();
-var Employee = mongoose.model('Employee', EmployeeSchema), Department = mongoose.model('Department', DepartmentSchema), d1;
+var Employee = mongoose.model('Employee', EmployeeSchema), Department = mongoose.model('Department', DepartmentSchema), Group = mongoose.model('Group', GroupSchema), d1;
 
 app.use(express.bodyParser());
 app.use(express.methodOverride());
@@ -38,11 +46,12 @@ var connected = false;
 function insert(done) {
     new Department({name: 'HR', employees: [new Employee({firstname: 'John'}), new Employee({firstname: 'Bob'})]}).save(function (e, o) {
         d1 = o;
+
         done();
     });
 }
 
-before(function onBefore(done) {
+before(function NestedPostTest$onBefore(done) {
     console.log('nested-post onBefore');
     mongoose.on('connected', function(){
         mongoose.db.dropDatabase(function(){
