@@ -1,21 +1,33 @@
 process.env.NODE_ENV = 'test';
 require('should');
-var app = require('../example/server.js'), request = require('./support/http'), mongoose = require('mongoose'), _u = require('underscore');
+var app, request = require('./support/http'), mongoose = require('mongoose'), _u = require('underscore');
 var assert = require('assert');
 var json = JSON.stringify;
-
+var d = 0;
+var connection = mongoose.createConnection();
 before(function onBefore(done) {
-    var connection = app.locals.mers.conn;
+    console.log('before routes-mocha');
     connection.on('connected', function () {
-        connection.db.dropDatabase(function () {
-            console.log('dropped database [' + connection.name + ']');
-            done();
-        });
-    });
 
+        console.log('connected routes-mocha');
+        app = require('../example/server.js')(connection);
+        done();
+    })
+    connection.open('mongodb://localhost/routes_mocha');
+});
+beforeEach(function (done) {
+    connection.db.dropDatabase(function () {
+        console.log('dropped routes-mocha');
+        done();
+    });
 });
 
-describe('rest', function () {
+describe('routes', function () {
+    function setup(done) {
+        console.log('setup called');
+        done();
+    }
+
     describe('GET /rest/blogpost', function () {
         it('should return empty list', function (done) {
             request(app).get('/rest/blogpost')
@@ -62,96 +74,102 @@ describe('rest', function () {
     });
 
     describe('testing  /rest/blogpost', function () {
-        var cid;
         it('should add 2 comments to the blog post', function (done) {
+            createPost(function (post) {
+                request(app)
+                    .put('/rest/blogpost/' + post._id)
+                    .set('Content-Type', 'application/json')
+                    .send(json({
+                        comments: [
+                            {title: 'Very Cool Thing You Have', body: 'Do you like my body?'},
+                            {title: 'I dunno I\'m bored', body: 'if you think i\'m sexy'}
+                        ]
+                    })).end(function (err, res) {
+                        if (err)
+                            console.log('ERROR', arguments);
+                        res.should.have.status(200);
+                        res.should.have.property('body');
+                        res.body.should.have.property('payload');
+                        res.body.payload.should.have.property('comments');
+                        res.body.payload.comments.should.have.lengthOf(2);
+                        res.body.payload.comments[1].should.have.property('title',  'I dunno I\'m bored');
+                        done();
 
-            request(app)
-                .put('/rest/blogpost/' + id)
-                .set('Content-Type', 'application/json')
-                .send(json({
-                    comments: [
-                        {title: 'Very Cool Thing You Have', body: 'Do you like my body?'},
-                        {title: 'I dunno I\'m bored', body: 'if you think i\'m sexy'}
-                    ]
-                })).end(function (err, res) {
-                    if (err)
-                        console.log('ERROR', arguments);
-                    res.should.have.status(200);
-                    res.should.have.property('body');
-                    res.body.should.have.property('payload');
-                    res.body.payload.should.have.property('comments');
-                    res.body.payload.comments.should.have.lengthOf(2);
-                    cid = res.body.payload.comments[1]._id;
-                    done();
-
-                });
-
+                    });
+            })
         });
         it('put comments[1] to the blogpost', function (done) {
+            createPost({ title: 'put', body: 'stuff', comments: [
+                {title: '123'},
+                {title: '345'},
+                {title: '456'}
+            ] }, function (post) {
+                request(app)
+                    .put('/rest/blogpost/' + post._id + '/comments/1')
+                    .set('Content-Type', 'application/json')
+                    .send(json(
+                        {title: 'Yup', body: 'Do you like my body?'}
+                    )).end(function (err, res) {
+                        if (err)
+                            console.log('ERROR', err.message, err.stack);
 
-            request(app)
-                .put('/rest/blogpost/' + id + '/comments/1')
-                .set('Content-Type', 'application/json')
-                .send(json(
-                    {title: 'Yup', body: 'Do you like my body?'}
-                )).end(function (err, res) {
-                    if (err)
-                        console.log('ERROR', err.message, err.stack);
+                        res.should.have.status(200);
+                        res.should.have.property('body');
+                        res.body.should.have.property('payload');
+                        res.body.payload.should.have.property('title', 'Yup');
+                        res.body.payload.should.have.property('_id');
+                        done();
 
-                    res.should.have.status(200);
-                    res.should.have.property('body');
-                    res.body.should.have.property('payload');
-                    res.body.payload.should.have.property('title', 'Yup');
-
-                    done();
-
-                });
+                    });
+            });
 
         });
         it('post comments to the blogpost', function (done) {
+            createPost(function (post) {
+                request(app)
+                    .post('/rest/blogpost/' + post._id + '/comments/')
+                    .set('Content-Type', 'application/json')
+                    .send(json(
+                        {title: 'YupYup', body: 'Do you like my body?'}
+                    )).end(function (err, res) {
+                        if (err)
+                            console.log('ERROR', err.message, err.stack);
 
-            request(app)
-                .post('/rest/blogpost/' + id + '/comments/')
-                .set('Content-Type', 'application/json')
-                .send(json(
-                    {title: 'YupYup', body: 'Do you like my body?'}
-                )).end(function (err, res) {
-                    if (err)
-                        console.log('ERROR', err.message, err.stack);
+                        res.should.have.status(200);
+                        res.should.have.property('body');
+                        res.body.should.have.property('payload');
+                        //            res.body.payload.should.have.lengthOf(3);
+                        res.body.payload.should.have.property('title', 'YupYup');
 
-                    res.should.have.status(200);
-                    res.should.have.property('body');
-                    res.body.should.have.property('payload');
-                    //            res.body.payload.should.have.lengthOf(3);
-                    res.body.payload.should.have.property('title', 'YupYup');
+                        done();
 
-                    done();
-
-                });
+                    });
+            });
 
         });
         it('should not crash on invalid PUT', function (done) {
-            request(app)
-                .put('/rest/blogpost/' + id)
-                .set('Content-Type', 'application/json')
-                .send(json(
-                    {title: 'No'}
-                )).end(function (err, res) {
-                    res.should.have.status(200);
-                    res.body.should.have.property('status', 1)
-                    res.body.should.have.property('message', 'Validation failed');
-                    done();
-                });
+            createPost(function (post) {
+                request(app)
+                    .put('/rest/blogpost/' + post._id)
+                    .set('Content-Type', 'application/json')
+                    .send(json(
+                        {title: 'No'}
+                    )).end(function (err, res) {
+                        res.should.have.status(200);
+                        res.body.should.have.property('status', 1)
+                        res.body.should.have.property('message', 'Validation failed');
+                        done();
+                    });
+            })
         })
         it('should be accessible from an url', function (done) {
-            var nid = cid;
             createPost({ title: 'Yup',
                 body: 'Do you like my body?',
                 comments: [
                     {body: 'Do you like my body?'}
                 ]
-            }, function (obj) {
-                request(app).get('/rest/blogpost/' + obj.payload._id + '/comments/' + obj.payload.comments[0]._id).end(function (err, res) {
+            }, function (post) {
+                request(app).get('/rest/blogpost/' + post._id + '/comments/' + post.comments[0]._id).end(function (err, res) {
 
                     res.should.have.status(200);
                     res.should.have.property('body');
@@ -160,66 +178,6 @@ describe('rest', function () {
                     done();
                 });
             })
-        });
-        it('should be accessible from an url with an index', function (done) {
-            request(app).get('/rest/blogpost/' + id + '/comments/1').end(function (err, res) {
-
-                res.should.have.status(200);
-                res.should.have.property('body');
-                res.body.should.have.property('payload');
-
-                res.body.payload.should.have.property("body", 'Do you like my body?');
-                done();
-            });
-
-        });
-        it('should be accessible from an url with an index and use a transformer', function (done) {
-            request(app).get('/rest/blogpost/' + id + '/comments/1?transform=labelval').end(function (err, res) {
-
-
-                res.should.have.status(200);
-                res.should.have.property('body');
-                res.body.should.have.property('payload');
-
-                res.body.payload.should.have.property("label", 'Very Cool Thing You Have');
-                done();
-            });
-
-        });
-        it('should be accessible from an url with an index and use a transformer and single mode is false', function (done) {
-            request(app).get('/rest/blogpost/' + id + '/comments/1?transform=labelval&single=false').end(function (err, res) {
-
-                res.should.have.status(200);
-                res.should.have.property('body');
-                res.body.should.have.property('payload');
-                res.body.payload.should.have.property('length');
-                //    res.body.payload[0].should.have.property("val", cid);
-                done();
-            });
-
-        });
-        it('should be accessible from an url with an index and use a transformer and single mode is true', function (done) {
-            request(app).get('/rest/blogpost/' + id + '/comments/1?transform=labelval&single=true').end(function (err, res) {
-
-                res.should.have.status(200);
-                res.should.have.property('body');
-                res.body.should.have.property('payload');
-                done();
-            });
-
-        });
-        it('should be accessible from an url with an index and use a transform FUNCTION in the request', function (done) {
-            request(app).get('/space/test/').end(function (err, res) {
-                if (err)
-                    console.log('ERROR', err, res.body);
-                //res.should.be.json
-                res.should.have.status(200);
-                res.should.have.property('body');
-                res.body.should.have.property('payload');
-                res.body.payload[0].should.have.property("junk", true);
-                done();
-            });
-
         });
 //        it('should be possible to populate comments', function (done) {
 //            request(app).get('/rest/blogpost/' + id + '?populate[comments]=title,_id').end(function (res) {
@@ -236,245 +194,78 @@ describe('rest', function () {
     });
     describe('DELETE /rest/blogpost/$id', function () {
         it('should delete the created blog posting', function (done) {
-            request(app).del('/rest/blogpost/' + id).end(function (err, res) {
+            createPost(function (post) {
+                request(app).del('/rest/blogpost/' + id).end(function (err, res) {
 
-                res.should.have.status(200);
-                res.should.have.property('body');
-                res.body.should.have.property('status', 0);
-                done();
-            });
-        });
-
-        it('should be null because it was deleted', function (done) {
-            request(app).get('/rest/blogpost/' + id).end(function (err, res) {
-
-                res.should.have.status(200);
-                res.should.have.property('body');
-                //TODO - technically this should return null, however the get part can't really tell if the query is nothing or expecting a return changing this to ?single=true would fix it
-                //res.body.should.have.property('payload').eql(null);
-                res.body.should.have.property('status', 0);
-                done();
-            });
-        });
-
-    });
-    describe('GET /rest/blogpost with search options', function () {
-        var pids = [];
-        it('sets up post A for testing', function (done) {
-            createPost({title: 'Post A', body: 'A'}, function (e) {
-                pids.push(e.payload._id);
-                done();
-            });
-        });
-        it('sets up post B for testing', function (done) {
-            createPost({title: 'Post B', body: 'B'}, function (e) {
-                pids.push(e.payload._id);
-                done();
-            });
-        });
-        it('sets up post C for testing', function (done) {
-            createPost({title: 'Post C', body: 'C'}, function (e) {
-                pids.push(e.payload._id);
-                done();
-            });
-        });
-        it('sets up post C for testing with date', function (done) {
-            createPost({title: 'Post C', date: new Date(150000000000)}, function (e) {
-                pids.push(e.payload._id);
-                done();
-            });
-        });
-
-        it('should be able to skip and limit', function (done) {
-            request(app).get('/rest/blogpost?skip=1&limit=1').end(function (err, res) {
-
-                res.should.have.status(200);
-                res.should.have.property('body');
-                res.body.should.have.property('payload').with.lengthOf(1);
-            //    res.body.payload[0].should.have.property('_id', pids[1]);
-                done();
-            });
-        });
-        it('should come back in reverse title order', function (done) {
-            request(app).get('/rest/blogpost?sort=title:-1').end(function (err, res) {
-
-                res.should.have.status(200);
-                res.should.have.property('body');
-           //     res.body.should.have.property('payload').with.lengthOf(4);
-                res.body.payload[0].should.have.property('_id', pids[pids.length - 2]);
-                done();
-            });
-
-        });
-        it('2 should come back in reverse title order filtered by C', function (done) {
-            request(app).get('/rest/blogpost?sort=title:-1,date:1&filter[title]=C').end(function (err, res) {
-
-                res.should.have.status(200);
-                res.should.have.property('body');
-//                res.body.payload.should.have.lengthOf(2);
-                res.body.payload[0].should.have.property('date');
-
-                done();
-            });
-
-        });
-        it('2 should come back in reverse title order filtered by C in label in labelval form', function (done) {
-            request(app).get('/rest/blogpost?sort=title:-1,date:1&filter[title]=C&transform=labelval').end(function (err, res) {
-
-                res.should.have.status(200);
-                res.should.have.property('body');
-                res.body.payload.should.have.lengthOf(2);
-                res.body.payload[0].should.have.property('label', 'Post C');
-                res.body.payload[1].should.have.property('label', 'Post C');
-          //      res.body.should.have.property('total', 4);
-               res.body.should.have.property('filterTotal', 2);
-
-                done();
-            });
-
-        });
-        it('1 should come back in reverse title order filtered by -title=C and body=A', function (done) {
-            request(app).get('/rest/blogpost?sort=title:-1,date:1&filter[body]=A').end(function (err, res) {
-
-
-                res.should.have.status(200);
-                res.body.payload.should.have.lengthOf(1);
-                res.body.payload[0].should.have.property('title', 'Post A');
-                //   res.body.payload[1].should.have.property('label', 'Post B');
-                res.body.should.have.property('total', 4);
-                res.body.should.have.property('filterTotal', 1);
-
-                done();
-            });
-
-        });
-
-        it('should return post c ', function (done) {
-            request(app).get('/rest/blogpost/finder/findTitleLike?title=c').end(function (err, res) {
-
-                res.should.have.status(200);
-                res.should.have.property('body');
-                res.body.payload.should.have.lengthOf(2);
-                res.body.payload[0].should.have.property('title', 'Post C');
-                res.body.payload[1].should.have.property('title', 'Post C');
-                res.body.should.have.property('total', 2);
-
-                done();
-            });
-        })
-        it('should return post c ', function (done) {
-            request(app).get('/rest/blogpost/finder/findTitleLike?title=Post&filter[title]=C').end(function (err, res) {
-
-                res.should.have.status(200);
-                res.should.have.property('body');
-                res.body.payload.should.have.lengthOf(2);
-                res.body.payload[0].should.have.property('title', 'Post C');
-                res.body.payload[1].should.have.property('title', 'Post C');
-                res.body.should.have.property('total', 4);
-                res.body.should.have.property('filterTotal', 2);
-                done();
-            });
-        })
-        it('should return post c using resty interface ', function (done) {
-            request(app).get('/rest/blogpost/finder/findTitleLike/Post?filter[title]=C').end(function (err, res) {
-
-                res.should.have.status(200);
-                res.should.have.property('body');
-                res.body.payload.should.have.lengthOf(2);
-                res.body.payload[0].should.have.property('title', 'Post C');
-                res.body.payload[1].should.have.property('title', 'Post C');
-                res.body.should.have.property('total', 4);
-                res.body.should.have.property('filterTotal', 2);
-                done();
-            });
-        })
-
-        describe('should handle errors without crashing when calling an invalid id', function () {
-            it('should not crash', function (done) {
-                request(app).get('/rest/blogpost/junk').end(function (err, res) {
                     res.should.have.status(200);
-                    res.body.should.have.property('status', 1)
-                    res.body.should.have.property('error');
-                    done();
-                });
-            })
-            it('should not crash', function (done) {
-                request(app).get('/rest/blogpost/').end(function (err, res) {
-                    res.should.have.status(200);
+                    res.should.have.property('body');
+                    res.body.should.have.property('status', 0);
 
-                    done();
-                });
-            })
-        })
+                    request(app).get('/rest/blogpost/' + id).end(function (err, res) {
 
-        describe('make a raw mongodb call', function () {
-            it('should not crash', function (done) {
-                request(app).get('/rest/blogpost/finder/findRaw').end(function (err, res) {
-                    if (err)
-                        console.log('err', err, res);
-                    res.should.have.status(200);
-                    res.body.should.have.property('status', 0)
-
-                    done();
-                });
-            })
-
-        })
-        describe('nested array calls', function () {
-            it('should allow for nested arrays of things', function (done) {
-                createPost({
-                    title: 'Test Depth',
-                    body: 'Should be deep',
-                    comments: [
-                        {
-                            title: 'hello', body: 'world', comment: 'im here', posts: [
-                            {
-                                title: 'hello2', body: 'world2', comment: 'im here',
-                                posts: [
-                                    {
-                                        title: 'hello2-3', body: 'world2-3', comment: 'im here'
-                                    }
-                                ]
-                            },
-                            {
-                                title: 'hello3', body: 'world3', comment: 'im here',
-                                posts: [
-                                    {
-                                        title: 'hello3-3', body: 'world3-3', comment: 'im here'
-                                    }
-                                ]
-                            }
-                        ]
-                        }
-                    ]
-
-                }, function (res) {
-                    request(app).get('/rest/blogpost/' + res.payload._id + '/comments/0/posts/1/posts/0').end(function (err, resp) {
-                        console.log(resp.body);
-                        resp.body.should.have.property('payload');
-                        resp.body.payload.should.have.property('body', 'world3-3');
+                        res.should.have.status(200);
+                        res.should.have.property('body');
+                        //TODO - technically this should return null, however the get part can't really tell if the query is nothing or expecting a return changing this to ?single=true would fix it
+                        //res.body.should.have.property('payload').eql(null);
+                        res.body.should.have.property('status', 0);
                         done();
+
                     });
+
                 })
             });
-        })
+        });
     });
-    var t = 0;
 
-    function createPost(opts, cb) {
-        if (!cb) {
-            cb = opts;
-            opts = { title: 'Test ' + (t), body: 'default body for ' + t}
-            t++;
-        }
 
-        request(app)
-            .post('/rest/blogpost')
-            .set('Content-Type', 'application/json')
-            .send(json(_u.extend({ date: new Date() }, opts))).end(
-            function (err, res) {
-                cb(res.body);
+
+    describe('should handle errors without crashing when calling an invalid id', function () {
+        it('should not crash invalid id', function (done) {
+            request(app).get('/rest/blogpost/junk').end(function (err, res) {
+                res.should.have.status(200);
+                res.body.should.have.property('status', 1)
+                res.body.should.have.property('error');
+                done();
             });
+        })
+        it('should not crash no id', function (done) {
+            request(app).get('/rest/blogpost/').end(function (err, res) {
+                res.should.have.status(200);
+
+                done();
+            });
+        })
+    })
+
+    describe('make a raw mongodb call', function () {
+        it('should not crash', function (done) {
+            request(app).get('/rest/blogpost/finder/findRaw').end(function (err, res) {
+                if (err)
+                    console.log('err', err, res);
+                res.should.have.status(200);
+                res.body.should.have.property('status', 0)
+
+                done();
+            });
+        })
+
+    })
+});
+var t = 0;
+
+function createPost(opts, cb) {
+    if (!cb) {
+        cb = opts;
+        opts = { title: 'Test ' + (t), body: 'default body for ' + t}
+        t++;
     }
 
-});
+    request(app)
+        .post('/rest/blogpost')
+        .set('Content-Type', 'application/json')
+        .send(json(_u.extend({ date: new Date() }, opts))).end(
+        function (err, res) {
+            cb(res.body.payload);
+        });
+}
+

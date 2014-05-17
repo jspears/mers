@@ -1,9 +1,9 @@
-var mongoose = require('mongoose'), Schema = mongoose.Schema, CallbackQuery = require('../../lib/callback-query');
-ObjectId = mongoose.Schema.ObjectId;
+module.exports = function (m) {
+var mongoose = m || require('mongoose'), Schema = m.base.Schema, CallbackQuery = require('../../lib/callback-query');
 
 var CommentSchema = new Schema();
 CommentSchema.add({
-    title:String, body:String, comment:String, date:Date, posts:[CommentSchema]
+    title: String, body: String, comment: String, date: Date, posts: [CommentSchema]
 });
 
 var BlogPostSchema = new Schema({
@@ -11,12 +11,12 @@ var BlogPostSchema = new Schema({
         type: String,
         match: new RegExp('^.{3,}$')
     },
-    body:String,
+    body: String,
     buf: Buffer,
     date: Date,
     comments: [CommentSchema],
-    meta:{
-        votes:Number, favs:Number
+    meta: {
+        votes: Number, favs: Number
     }
 });
 /**
@@ -27,15 +27,15 @@ var BlogPostSchema = new Schema({
 BlogPostSchema.statics.findTitleLike = function findTitleLike(q, term) {
     var search = term || q && q.title;
     if (!search)
-        return this.find({_id:null});
+        return this.find({_id: null});
 
 
-    return this.find({title:new RegExp(search, 'i')});
+    return this.find({title: new RegExp(search, 'i')});
 }
 
 BlogPostSchema.methods.findCommentsLike = function (q, term) {
     var search = term || q.title;
-    return this.find({comments:new RegExp(search, 'i')});
+    return this.find({comments: new RegExp(search, 'i')});
 }
 
 /**
@@ -63,5 +63,5 @@ BlogPostSchema.statics.findRaw = function onFindRaw(q) {
  * @constructor
  */
 
-var Comment = module.exports.Comment = mongoose.model('Comment', CommentSchema);
-var BlogPost = module.exports.BlogPost = mongoose.model('BlogPost', BlogPostSchema);
+    return {Comment: m.model('Comment', CommentSchema), BlogPost: m.model('BlogPost', BlogPostSchema)};
+}

@@ -1,14 +1,11 @@
 var express = require('express'),
     rest = require('../index'),
     request = require('./support/http'),
-    mongoose = require('mongoose'),
     should = require('should'),
-    Schema = mongoose.Schema,
     json = JSON.stringify,
-    app = express(),
-    testCase = require('nodeunit').testCase;
-;
-
+    app = express()
+    ;
+var mongoose = require('mongoose').createConnection(), Schema = require('mongoose').Schema;
 var UserSchema = new Schema({
     username: {type: String, required: true, unique: true, index: true},
     count: {type: Number},
@@ -22,10 +19,10 @@ var UserSchema = new Schema({
 var User = mongoose.model('User', UserSchema);
 app.use(express.bodyParser());
 app.use(express.methodOverride());
-app.use('/rest', rest({ mongoose: mongoose }).rest())
-var connection = mongoose.connection;
 
-module.exports.var
+
+app.use('/rest', rest({ mongoose: mongoose }).rest())
+
 d = new Date();
 function date(offset) {
     return new Date(d.getTime() + offset);
@@ -34,11 +31,27 @@ var score = 0;
 var usernames = ['abc', 'def', 'acc', 'dff']
 
 var isSetup = false;
+var connected = false;
+before(function onBefore(done) {
+    console.log('filter-mocha');
+    var connection = mongoose;
+    connection.on('connected', function () {
+        if (connected) return;
+        connected = true;
+        mongoose.db.dropDatabase(function(){
+           insert(done);
+        });
+    });
+    mongoose.open('mongodb://localhost/filter-mocha');
+});
+
+
 function insert(done) {
+    console.log('insert');
     var us = [].concat(usernames);
     var save = function (username) {
         var u = new User({
-            username:username,
+            username: username,
             count: score++,
             meta: {
                 created: date(-10000 * score)
@@ -62,24 +75,8 @@ function insert(done) {
     }
     save(us.shift());
 }
-module.exports = {
-    setUp: function (done) {
-        console.log('setup');
-        if (isSetup){
-           return done();
-        }
-        mongoose.connect('mongodb://localhost/user_example_rest', function () {
-            console.log('connected');
-            mongoose.connection.db.dropDatabase(function () {
-                console.log('dropped');
-                isSetup = true;
-                insert(done);
-
-            });
-        });
-    },
-
-    testFilterString: function (test) {
+describe('filtering conditions', function () {
+    it('should filter by username string', function (done) {
         request(app)
             .get('/rest/User?filter[username]=>abc')
             .expect(200).end(function (err, res) {
@@ -87,11 +84,11 @@ module.exports = {
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;
 
-                test.done();
+                done();
 
             })
-    },
-    testFilterGtNumber: function (test) {
+    });
+    it('should fiter greater than number', function (done) {
         request(app)
             .get('/rest/User?filter[count]=>1')
             .expect(200).end(function (err, res) {
@@ -99,11 +96,11 @@ module.exports = {
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;
 
-                test.done();
+                done();
 
             })
-    },
-    testFilterltNumber: function (test) {
+    });
+    it('should filter less than number', function (done) {
         request(app)
             .get('/rest/User?filter[count]=<1')
             .expect(200).end(function (err, res) {
@@ -111,27 +108,27 @@ module.exports = {
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;
 
-                test.done();
+                done();
 
             })
-    },
-    testFilterltDate: function (test) {
+    });
+    /*
+    it('should filter less than date', function (done) {
         request(app)
-            .get("/rest/User?filter[meta][created]=<" + (date(-10000 *3).toJSON()))
+            .get("/rest/User?filter[meta][created]=<" + (date(-10000 * 3).toJSON()))
             .expect(200).end(function (err, res) {
-                if (err){
-                    console.log('Error',res, err);
-                    test.fail();
+                if (err) {
+                    console.log('Error', res, err);
+                    done(err);
                 }
                 console.log('response', res.body);
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;
                 payload.should.have.length(2);
 
-                test.done();
+                done();
 
             })
-    }
+    });*/
 
-}
-
+});
