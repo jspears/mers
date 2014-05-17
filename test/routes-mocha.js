@@ -12,7 +12,7 @@ before(function onBefore(done) {
         console.log('connected routes-mocha');
         app = require('../example/server.js')(connection);
         done();
-    })
+    });
     connection.open('mongodb://localhost/routes_mocha');
 });
 beforeEach(function (done) {
@@ -92,7 +92,7 @@ describe('routes', function () {
                         res.body.should.have.property('payload');
                         res.body.payload.should.have.property('comments');
                         res.body.payload.comments.should.have.lengthOf(2);
-                        res.body.payload.comments[1].should.have.property('title',  'I dunno I\'m bored');
+                        res.body.payload.comments[1].should.have.property('title', 'I dunno I\'m bored');
                         done();
 
                     });
@@ -156,12 +156,12 @@ describe('routes', function () {
                         {title: 'No'}
                     )).end(function (err, res) {
                         res.should.have.status(200);
-                        res.body.should.have.property('status', 1)
+                        res.body.should.have.property('status', 1);
                         res.body.should.have.property('message', 'Validation failed');
                         done();
                     });
-            })
-        })
+            });
+        });
         it('should be accessible from an url', function (done) {
             createPost({ title: 'Yup',
                 body: 'Do you like my body?',
@@ -177,31 +177,19 @@ describe('routes', function () {
                     res.body.payload.should.have.property("body", 'Do you like my body?');
                     done();
                 });
-            })
+            });
         });
-//        it('should be possible to populate comments', function (done) {
-//            request(app).get('/rest/blogpost/' + id + '?populate[comments]=title,_id').end(function (res) {
-//
-//                res.should.have.status(200);
-//                res.body.should.have.property('payload');
-//                res.body.payload[0].should.have.property("_id");
-//                res.body.payload[0].should.have.property("comments");
-//                res.body.payload[0].comments[0].should.have.property("title", 'Very Cool Thing You Have');
-//                done();
-//            });
-//
-//        });
     });
     describe('DELETE /rest/blogpost/$id', function () {
         it('should delete the created blog posting', function (done) {
             createPost(function (post) {
-                request(app).del('/rest/blogpost/' + id).end(function (err, res) {
+                request(app).del('/rest/blogpost/' + post._id).end(function (err, res) {
 
                     res.should.have.status(200);
                     res.should.have.property('body');
                     res.body.should.have.property('status', 0);
 
-                    request(app).get('/rest/blogpost/' + id).end(function (err, res) {
+                    request(app).get('/rest/blogpost/' + post._id).end(function (err, res) {
 
                         res.should.have.status(200);
                         res.should.have.property('body');
@@ -218,24 +206,23 @@ describe('routes', function () {
     });
 
 
-
     describe('should handle errors without crashing when calling an invalid id', function () {
         it('should not crash invalid id', function (done) {
             request(app).get('/rest/blogpost/junk').end(function (err, res) {
                 res.should.have.status(200);
-                res.body.should.have.property('status', 1)
+                res.body.should.have.property('status', 1);
                 res.body.should.have.property('error');
                 done();
             });
-        })
+        });
         it('should not crash no id', function (done) {
             request(app).get('/rest/blogpost/').end(function (err, res) {
                 res.should.have.status(200);
 
                 done();
             });
-        })
-    })
+        });
+    });
 
     describe('make a raw mongodb call', function () {
         it('should not crash', function (done) {
@@ -243,20 +230,19 @@ describe('routes', function () {
                 if (err)
                     console.log('err', err, res);
                 res.should.have.status(200);
-                res.body.should.have.property('status', 0)
+                res.body.should.have.property('status', 0);
 
                 done();
             });
-        })
-
-    })
+        });
+    });
 });
 var t = 0;
 
 function createPost(opts, cb) {
     if (!cb) {
         cb = opts;
-        opts = { title: 'Test ' + (t), body: 'default body for ' + t}
+        opts = { title: 'Test ' + (t), body: 'default body for ' + t};
         t++;
     }
 
