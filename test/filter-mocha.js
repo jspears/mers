@@ -3,7 +3,8 @@ var express = require('express'),
     request = require('./support/http'),
     should = require('should'),
     json = JSON.stringify,
-    app = express()
+    app = express(),
+    compat = require('../lib/compat')
     ;
 var mongoose = require('mongoose').createConnection(), Schema = require('mongoose').Schema;
 var UserSchema = new Schema({
@@ -17,10 +18,7 @@ var UserSchema = new Schema({
 });
 
 var User = mongoose.model('User', UserSchema);
-app.use(express.bodyParser());
-app.use(express.methodOverride());
-
-
+app.use(compat.bodyParser());
 app.use('/rest', rest({ mongoose: mongoose }).rest())
 
 d = new Date();
