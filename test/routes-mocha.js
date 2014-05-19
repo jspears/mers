@@ -1,8 +1,6 @@
 process.env.NODE_ENV = 'test';
 require('should');
-var app, request = require('./support/http'), mongoose = require('mongoose'), _u = require('underscore');
-var assert = require('assert');
-var json = JSON.stringify;
+var app, request = require('./support/http'), mongoose = require('mongoose'), _u = require('underscore'),assert = require('assert'),json = JSON.stringify;
 var d = 0;
 var connection = mongoose.createConnection();
 before(function onBefore(done) {
@@ -11,6 +9,7 @@ before(function onBefore(done) {
 
         console.log('connected routes-mocha');
         app = require('../example/server.js')(connection);
+
         done();
     });
     connection.open('mongodb://localhost/routes_mocha');
@@ -367,6 +366,7 @@ describe('routes', function () {
                     .end(function (err, res) {
                         var payload = res.body.should.have.property('payload').obj;
                         payload.should.have.property('_id', p._id);
+                        request(app).get()
                         done();
 
 

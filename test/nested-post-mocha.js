@@ -76,4 +76,12 @@ describe('testing nested', function () {
                 done();
             })
     })
+    it('should post nested objects', function(done){
+        request(app).post('/rest/Group').set('Content-Type', 'application/json')
+            .send(json({'name':'test', employees:[{firstname:'John'}, {firstname:'Suzy'}]}))
+            .end(function(err, res){
+              console.log(res);
+               done();
+            });
+    })
 });
