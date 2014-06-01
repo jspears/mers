@@ -86,7 +86,7 @@ describe('routes', function () {
                     })).end(function (err, res) {
                         if (err)
                             console.log('ERROR', arguments);
-                        res.should.have.status(200);
+                        res.should.have.property('statusCode', 200);
                         res.should.have.property('body');
                         res.body.should.have.property('payload');
                         res.body.payload.should.have.property('comments');
@@ -112,7 +112,7 @@ describe('routes', function () {
                         if (err)
                             console.log('ERROR', err.message, err.stack);
 
-                        res.should.have.status(200);
+                        res.should.have.property('statusCode', 200);
                         res.should.have.property('body');
                         res.body.should.have.property('payload');
                         res.body.payload.should.have.property('title', 'Yup');
@@ -134,7 +134,7 @@ describe('routes', function () {
                         if (err)
                             console.log('ERROR', err.message, err.stack);
 
-                        res.should.have.status(200);
+                        res.should.have.property('statusCode', 200);
                         res.should.have.property('body');
                         res.body.should.have.property('payload');
                         //            res.body.payload.should.have.lengthOf(3);
@@ -154,7 +154,7 @@ describe('routes', function () {
                     .send(json(
                         {title: 'No'}
                     )).end(function (err, res) {
-                        res.should.have.status(200);
+                        res.should.have.property('statusCode', 200)
                         res.body.should.have.property('status', 1);
                         res.body.should.have.property('message', 'Validation failed');
                         done();
@@ -170,7 +170,7 @@ describe('routes', function () {
             }, function (post) {
                 request(app).get('/rest/blogpost/' + post._id + '/comments/' + post.comments[0]._id).end(function (err, res) {
 
-                    res.should.have.status(200);
+                    res.should.have.property('statusCode', 200);
                     res.should.have.property('body');
                     res.body.should.have.property('payload');
                     res.body.payload.should.have.property("body", 'Do you like my body?');
@@ -184,13 +184,13 @@ describe('routes', function () {
             createPost(function (post) {
                 request(app).del('/rest/blogpost/' + post._id).end(function (err, res) {
 
-                    res.should.have.status(200);
+                    res.should.have.property('statusCode', 200);
                     res.should.have.property('body');
                     res.body.should.have.property('status', 0);
 
                     request(app).get('/rest/blogpost/' + post._id).end(function (err, res) {
 
-                        res.should.have.status(200);
+                        res.should.have.property('statusCode', 200);
                         res.should.have.property('body');
                         //TODO - technically this should return null, however the get part can't really tell if the query is nothing or expecting a return changing this to ?single=true would fix it
                         //res.body.should.have.property('payload').eql(null);
@@ -208,7 +208,7 @@ describe('routes', function () {
     describe('should handle errors without crashing when calling an invalid id', function () {
         it('should not crash invalid id', function (done) {
             request(app).get('/rest/blogpost/junk').end(function (err, res) {
-                res.should.have.status(200);
+                res.should.have.property('statusCode', 200);
                 res.body.should.have.property('status', 1);
                 res.body.should.have.property('error');
                 done();
@@ -216,7 +216,7 @@ describe('routes', function () {
         });
         it('should not crash no id', function (done) {
             request(app).get('/rest/blogpost/').end(function (err, res) {
-                res.should.have.status(200);
+                res.should.have.property('statusCode', 200);
 
                 done();
             });
@@ -228,7 +228,7 @@ describe('routes', function () {
             request(app).get('/rest/blogpost/finder/findRaw').end(function (err, res) {
                 if (err)
                     console.log('err', err, res);
-                res.should.have.status(200);
+                res.should.have.property('statusCode', 200);
                 res.body.should.have.property('status', 0);
 
                 done();

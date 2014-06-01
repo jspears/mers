@@ -81,7 +81,7 @@ describe('read only mers routes', function () {
         it('should be able to skip and limit', function (done) {
             request(app).get('/rest/blogpost?skip=1&limit=1').end(function (err, res) {
 
-                res.should.have.status(200);
+                res.should.have.property('statusCode', 200);
                 res.should.have.property('body');
                 res.body.should.have.property('payload').with.lengthOf(1);
                 //    res.body.payload[0].should.have.property('_id', pids[1]);
@@ -93,7 +93,7 @@ describe('read only mers routes', function () {
         describe('should handle errors without crashing when calling an invalid id', function () {
             it('should not crash', function (done) {
                 request(app).get('/rest/blogpost/junk').end(function (err, res) {
-                    res.should.have.status(200);
+                    res.should.have.property('statusCode', 200);
                     res.body.should.have.property('status', 1)
                     res.body.should.have.property('error');
                     done();
@@ -101,7 +101,7 @@ describe('read only mers routes', function () {
             })
             it('should not crash', function (done) {
                 request(app).get('/rest/blogpost/').end(function (err, res) {
-                    res.should.have.status(200);
+                    res.should.have.property('statusCode', 200);
 
                     done();
                 });
@@ -113,7 +113,7 @@ describe('read only mers routes', function () {
                 request(app).get('/rest/blogpost/finder/findRaw').end(function (err, res) {
                     if (err)
                         console.log('err', err, res);
-                    res.should.have.status(200);
+                    res.should.have.property('statusCode', 200);
                     res.body.should.have.property('status', 0)
 
                     done();
@@ -136,7 +136,7 @@ describe('read only mers routes', function () {
             it('should be accessible from an url with an index', function (done) {
                 request(app).get('/rest/blogpost/' + data[5]._id + '/comments/1').end(function (err, res) {
 
-                    res.should.have.status(200);
+                    res.should.have.property('statusCode', 200);
                     res.should.have.property('body');
                     res.body.should.have.property('payload');
 
@@ -149,7 +149,7 @@ describe('read only mers routes', function () {
                 request(app).get('/rest/blogpost/' + data[5]._id + '/comments/1?transform=labelval').end(function (err, res) {
 
 
-                    res.should.have.status(200);
+                    res.should.have.property('statusCode', 200);
                     res.should.have.property('body');
                     res.body.should.have.property('payload');
 
@@ -161,7 +161,7 @@ describe('read only mers routes', function () {
             it('should be accessible from an url with an index and use a transformer and single mode is false', function (done) {
                 request(app).get('/rest/blogpost/' + data[5]._id + '/comments/1?transform=labelval&single=false').end(function (err, res) {
 
-                    res.should.have.status(200);
+                    res.should.have.property('statusCode', 200);
                     res.should.have.property('body');
                     res.body.should.have.property('payload');
                     res.body.payload.should.have.property('length');
@@ -173,7 +173,7 @@ describe('read only mers routes', function () {
             it('should be accessible from an url with an index and use a transformer and single mode is true', function (done) {
                 request(app).get('/rest/blogpost/' + data[5]._id + '/comments/1?transform=labelval&single=true').end(function (err, res) {
 
-                    res.should.have.status(200);
+                    res.should.have.property('statusCode', 200);
                     res.should.have.property('body');
                     res.body.should.have.property('payload');
                     done();
@@ -185,7 +185,7 @@ describe('read only mers routes', function () {
                     if (err)
                         console.log('ERROR', err, res.body);
                     //res.should.be.json
-                    res.should.have.status(200);
+                    res.should.have.property('statusCode', 200);
                     res.should.have.property('body');
                     res.body.should.have.property('payload');
                     res.body.payload[0].should.have.property("junk", true);
@@ -198,7 +198,7 @@ describe('read only mers routes', function () {
         it('should be able to skip and limit', function (done) {
             request(app).get('/rest/blogpost?skip=1&limit=1').end(function (err, res) {
 
-                res.should.have.status(200);
+                res.should.have.property('statusCode', 200);
                 res.should.have.property('body');
                 res.body.should.have.property('payload').with.lengthOf(1);
                 //    res.body.payload[0].should.have.property('_id', pids[1]);
@@ -208,7 +208,7 @@ describe('read only mers routes', function () {
         it('should come back in reverse title order', function (done) {
             request(app).get('/rest/blogpost?sort=title:-1').end(function (err, res) {
 
-                res.should.have.status(200);
+                res.should.have.property('statusCode', 200);
                 var body = res.body.should.have.property('payload').obj;
                 res.body.should.have.property('payload').with.lengthOf(6);
                 var id = data[data.length - 1]._id;
@@ -220,7 +220,7 @@ describe('read only mers routes', function () {
         it('2 should come back in reverse title order filtered by C', function (done) {
             request(app).get('/rest/blogpost?sort=title:-1,date:1&filter[title]=C').end(function (err, res) {
 
-                res.should.have.status(200);
+                res.should.have.property('statusCode', 200);
                 res.should.have.property('body');
 //                res.body.payload.should.have.lengthOf(2);
                 res.body.payload[0].should.have.property('date');
@@ -232,11 +232,12 @@ describe('read only mers routes', function () {
         it('2 should come back in reverse title order filtered by C in label in labelval form', function (done) {
             request(app).get('/rest/blogpost?sort=title:-1,date:1&filter[title]=C&transform=labelval').end(function (err, res) {
 
-                res.should.have.status(200);
+                res.should.have.property('statusCode', 200);
                 res.should.have.property('body');
                 res.body.payload.should.have.lengthOf(2);
-                res.body.payload[0].should.have.property('label', 'Post C');
-                res.body.payload[1].should.have.property('label', 'Post CD');
+                res.body.payload.should.matchEach(function(v){
+                    return /Post C/.test(v.label);
+                })
                 //      res.body.should.have.property('total', 4);
                 res.body.should.have.property('filterTotal', 2);
 
@@ -248,7 +249,7 @@ describe('read only mers routes', function () {
             request(app).get('/rest/blogpost?sort=title:-1,date:1&filter[body]=A').end(function (err, res) {
 
 
-                res.should.have.status(200);
+                res.should.have.property('statusCode', 200);
                 res.body.payload.should.have.lengthOf(1);
                 res.body.payload[0].should.have.property('title', 'Post A');
                 //   res.body.payload[1].should.have.property('label', 'Post B');
@@ -263,11 +264,12 @@ describe('read only mers routes', function () {
         it('should return post c ', function (done) {
             request(app).get('/rest/blogpost/finder/findTitleLike?title=c').end(function (err, res) {
 
-                res.should.have.status(200);
+                res.should.have.property('statusCode', 200);
                 res.should.have.property('body');
                 res.body.payload.should.have.lengthOf(2);
-                res.body.payload[0].should.have.property('title', 'Post C');
-                res.body.payload[1].should.have.property('title', 'Post CD');
+                res.body.payload.should.matchEach(function(v){
+                    return /Post C/.test(v.title);
+                })
                 res.body.should.have.property('total', 2);
 
                 done();
@@ -276,11 +278,12 @@ describe('read only mers routes', function () {
         it('should return post c ', function (done) {
             request(app).get('/rest/blogpost/finder/findTitleLike?title=Post&filter[title]=C').end(function (err, res) {
 
-                res.should.have.status(200);
+                res.should.have.property('statusCode', 200);
                 res.should.have.property('body');
                 res.body.payload.should.have.lengthOf(2);
-                res.body.payload[0].should.have.property('title', 'Post C');
-                res.body.payload[1].should.have.property('title', 'Post CD');
+                res.body.payload.should.matchEach(function(v){
+                    return /Post C/.test(v.title);
+                })
                 res.body.should.have.property('total', 6);
                 res.body.should.have.property('filterTotal', 2);
                 done();
@@ -289,11 +292,14 @@ describe('read only mers routes', function () {
         it('should return post c using resty interface ', function (done) {
             request(app).get('/rest/blogpost/finder/findTitleLike/Post?filter[title]=C').end(function (err, res) {
 
-                res.should.have.status(200);
+                res.should.have.property('statusCode', 200);
                 res.should.have.property('body');
                 res.body.payload.should.have.lengthOf(2);
-                res.body.payload[0].should.have.property('title', 'Post C');
-                res.body.payload[1].should.have.property('title', 'Post CD');
+//                res.body.payload[0].should.title.should('title', 'Post C');
+//                res.body.payload[1].should.have.property('title', 'Post CD');
+                res.body.payload.should.matchEach(function(v){
+                    return /Post C/.test(v.title);
+                })
                 done();
             });
         })
