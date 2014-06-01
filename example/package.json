@@ -5,6 +5,8 @@
   , "dependencies": {
     "mongoose":"latest",
     "mers":"latest",
+    "expressjs":"latest",
+    "body-parser":"latest",
     "pow-mongoose-fixtures":"latest"
   }
 }

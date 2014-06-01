@@ -2,12 +2,14 @@ var mmongoose = require('mongoose'),
     Schema = mmongoose.Schema,
     objectId = mmongoose.Schema.ObjectId,
     express = require('express'),
+
     rest = require('../index'),
     request = require('./support/http'),
     mongoose = require('mongoose'),
     should = require('should'),
     Schema = mongoose.Schema,
     json = JSON.stringify,
+    compat = require('../lib/compat'),
     app = express();
 
 var EmployeeSchema = new Schema({
@@ -39,8 +41,7 @@ var DepartmentSchema = new Schema({
 var mongoose = mmongoose.createConnection();
 var Employee = mongoose.model('Employee', EmployeeSchema), Department = mongoose.model('Department', DepartmentSchema), Group = mongoose.model('Group', GroupSchema), d1;
 
-app.use(express.bodyParser());
-app.use(express.methodOverride());
+app.use(compat.bodyParser());
 app.use('/rest', rest({ mongoose: mongoose }).rest())
 var connected = false;
 function insert(done) {
@@ -75,5 +76,13 @@ describe('testing nested', function () {
                 payload.should.have.property('_id');
                 done();
             })
+    })
+    it('should post nested objects', function(done){
+        request(app).post('/rest/Group').set('Content-Type', 'application/json')
+            .send(json({'name':'test', employees:[{firstname:'John'}, {firstname:'Suzy'}]}))
+            .end(function(err, res){
+              console.log(res);
+               done();
+            });
     })
 });
