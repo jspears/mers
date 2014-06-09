@@ -146,16 +146,35 @@ They are passed the query object and the rest of the url. All of the populate's,
 BlogPostSchema.statics.findTitleLike = function findTitleLike(q, term) {
     return this.find({'title':new RegExp(q.title || term, 'i')});
 }
-
 ```
 
 So you can get the url
 
-    http://localhost:3000/rest/blogpost/finder/findTitleLike?title=term
+
+```
+http://localhost:3000/rest/blogpost/finder/findTitleLike?title=term
+```
 
 or
 
-    http://localhost:3000/rest/blogpost/finder/findTitleLike/term
+```
+http://localhost:3000/rest/blogpost/finder/findTitleLike/term
+```
+
+#### Callbacks with finders
+Occassionally you may want to do something like a double query within a finder.   Mers has got your back.
+
+```javascript
+   BlogPostSchema.statics.findByCallback = function onFindByCallback(q) {
+        var self = this, id = q.id;
+        //Note pass the callback into exec, this is a typical mongoose function(err, success);
+        return function onFindByCallback$Callback(cb) {
+            self.findById(id).exec(cb);
+        }
+    }
+
+```
+
 
 ### [Error Handling][error]
 To create a custom error handler

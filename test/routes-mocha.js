@@ -374,6 +374,19 @@ describe('routes', function () {
             });
         });
     });
+    describe('it should allow for callback returned from finders', function(){
+
+        it('should return', function(done){
+            createPost(function(post){
+                request(app).get('/rest/blogpost/finder/findByCallback?id='+post._id).set('Content-Type', 'application/json').end(function(err, res){
+                    if (err) return done();
+                    var payload = res.body.should.have.property('payload').obj;
+                    payload[0].should.have.property('_id', post._id);
+                    done();
+                });
+            })
+        })
+    })
 });
 var t = 0;
 
