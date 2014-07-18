@@ -3,7 +3,7 @@
  */
 module.exports = function (mongoose) {
     var express = require('express'), mongoose = mongoose || require('mongoose'),
-        rest = require('../index.js'), models = require('./models/blogpost')(mongoose), compat = require('mers/lib/compat');
+        rest = require('../index.js'), models = require('./models/blogpost')(mongoose), compat = require('../lib/compat');
 
     var app = express();
 // Configuration
