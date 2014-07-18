@@ -181,7 +181,7 @@ To create a custom error handler
 
 ```javascript
 
-   app.use('/rest, rest({
+   app.use('/rest', rest({
          error : function(err, req, res, next){
                res.send({
                    status:1,
@@ -196,7 +196,7 @@ You can transform your results by adding a custom transformer and or adding a ne
 
 ```javascript
 
-   app.use('/rest, rest({
+   app.use('/rest', rest({
          transformers :{
           cooltranform:function(Model, label){
              return function(obj){
