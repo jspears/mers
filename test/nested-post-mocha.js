@@ -84,5 +84,19 @@ describe('testing nested', function () {
               console.log(res);
                done();
             });
+    });
+    it('should error well', function(done){
+        request(app).get('/rest/Department/'+d1._id).expect(200).end(function(err,res){
+           request(app).post('/rest/Department')
+               .set('Content-Type', 'application/json')
+               .send(json(res.body.payload))
+               .expect(200)
+               .end(function(err,resp){
+                   resp.body.should.have.property('error');
+                   resp.body.should.not.have.property('payload');
+                   resp.body.should.have.property('status', 1);
+                   done();
+               });
+        });
     })
 });
