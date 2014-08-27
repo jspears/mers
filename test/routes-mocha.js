@@ -397,6 +397,28 @@ describe('routes', function () {
             done();
 
         });
+
+    });
+    it('should add transform to the blog post', function (done) {
+        createPost(function (post) {
+            request(app)
+                .put('/rest/blogpost_t/' + post._id)
+                .set('Content-Type', 'application/json')
+                .send(json({
+                    comments: [
+                        {title: 'Very Cool Thing You Have', body: 'Do you like my body?'},
+                        {title: 'I dunno I\'m bored', body: 'if you think i\'m sexy'}
+                    ]
+                })).end(function (err, res) {
+                    if (err)
+                        console.log('ERROR', arguments);
+
+                    res.body.should.have.property('payload');
+                    res.body.payload.should.have.property('label', 'stuff');
+                    done();
+
+                });
+        })
     });
 });
 var t = 0;

@@ -17,6 +17,16 @@ module.exports = function (mongoose) {
         req.url = '/rest/blogpost';
         next();
     });
+
+    app.put('/rest/blogpost_t/*', function(req,res,next){
+
+        req.query.transform = [function(o){
+            return {id:o._id, label: 'stuff', title: o.title};
+        }];
+        req.url = '/rest/blogpost/'+req.url.substring('/rest/blogpost_t/'.length);
+        next();
+    });
+
     app.get('/space/test/', function (req, res, next) {
         console.log('here I am')
         req.query.transform = function (v) {
