@@ -25,6 +25,7 @@ fs.readdir(testDir, function (err, files) {
 
     var runner = mocha.run(function () {
         console.log('finished');
+        process.exit(0);
     });
 
     runner.on('pass', function (test) {
@@ -33,5 +34,7 @@ fs.readdir(testDir, function (err, files) {
 
     runner.on('fail', function (test) {
         console.log('... %s failed', test.title);
+        process.exit(1);
+
     });
 });

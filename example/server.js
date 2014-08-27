@@ -9,7 +9,14 @@ module.exports = function (mongoose) {
 // Configuration
 
     app.use(compat.bodyParser());
+    app.post('/rest/blogpost_t', function(req,res,next){
 
+        req.query.transform = [function(o){
+            return {id:o._id, label: 'stuff'};
+        }];
+        req.url = '/rest/blogpost';
+        next();
+    });
     app.get('/space/test/', function (req, res, next) {
         console.log('here I am')
         req.query.transform = function (v) {

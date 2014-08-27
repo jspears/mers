@@ -1,6 +1,6 @@
 process.env.NODE_ENV = 'test';
 require('should');
-var app, request = require('./support/http'), mongoose = require('mongoose'), _u = require('underscore'),assert = require('assert'),json = JSON.stringify;
+var app, request = require('./support/http'), mongoose = require('mongoose'), _u = require('underscore'), assert = require('assert'), json = JSON.stringify;
 var d = 0;
 var connection = mongoose.createConnection();
 before(function onBefore(done) {
@@ -9,6 +9,7 @@ before(function onBefore(done) {
 
         console.log('connected routes-mocha');
         app = require('../example/server.js')(connection);
+
 
         done();
     });
@@ -156,7 +157,7 @@ describe('routes', function () {
                     )).end(function (err, res) {
                         res.should.have.property('statusCode', 200)
                         res.body.should.have.property('status', 1);
-                        res.body.should.have.property('message', 'Validation failed');
+                        res.body.error.should.have.property('message', 'Validation failed');
                         done();
                     });
             });
@@ -374,11 +375,11 @@ describe('routes', function () {
             });
         });
     });
-    describe('it should allow for callback returned from finders', function(){
+    describe('it should allow for callback returned from finders', function () {
 
-        it('should return', function(done){
-            createPost(function(post){
-                request(app).get('/rest/blogpost/finder/findByCallback?id='+post._id).set('Content-Type', 'application/json').end(function(err, res){
+        it('should return', function (done) {
+            createPost(function afterCreatePost(post) {
+                request(app).get('/rest/blogpost/finder/findByCallback?id=' + post._id).set('Content-Type', 'application/json').end(function onEndFind(err, res) {
                     if (err) return done();
                     var payload = res.body.should.have.property('payload').obj;
                     payload[0].should.have.property('_id', post._id);
@@ -386,21 +387,38 @@ describe('routes', function () {
                 });
             })
         })
-    })
+    });
+    it('should allow for transformers on post', function (done) {
+
+        setupPost(null, '/rest/blogpost_t').end(function(e,res){
+            var body = res.body;
+            body.should.have.property('payload');
+            body.payload.should.have.property('label', 'stuff');
+            done();
+
+        });
+    });
 });
 var t = 0;
 
-function createPost(opts, cb) {
-    if (!cb) {
-        cb = opts;
+function setupPost(opts, url) {
+    if (!opts) {
         opts = { title: 'Test ' + (t), body: 'default body for ' + t};
         t++;
     }
 
-    request(app)
-        .post('/rest/blogpost')
+    return request(app)
+        .post(url || '/rest/blogpost')
         .set('Content-Type', 'application/json')
-        .send(json(_u.extend({ date: new Date() }, opts))).end(
+        .send(json(_u.extend({ date: new Date() }, opts)));
+}
+function createPost(opts, cb) {
+    if (!cb) {
+        cb = opts;
+        opts = null
+    }
+
+    setupPost(opts).end(
         function (err, res) {
             cb(res.body.payload);
         });
