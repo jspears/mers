@@ -228,6 +228,43 @@ You can create your own result stream. It needs to subclass Stream and be writab
 for other formats, and preventing the wrapping of data in the payload.
 
 
+##Method
+You can invoke a method on a model.  This useful to expose more complicated things
+that can't just be filtered.   Of course you can return nested nestings too...
+
+
+###Returning an Object
+This one just returns an object, from /department/<id>/hello
+
+```javascript
+DepartmentSchema.methods.hello = function DepartmentSchema$hello(){
+    return {name:'hello '+this.name};
+}
+```
+
+###Returning a Promise.
+This is returns a promise from /department/<id>/promises.  Really you just
+need to return an object with an then function.  So any promise library should work.
+
+```javascript
+DepartmentSchema.methods.promises = function DepartmentSchema$hello(data){
+    var p = promise();
+    setTimeout(p.resolve.bind(p, null, {name:'hello '+this.name}), 100);
+    return p;
+}
+```
+
+### Returning a Query object.
+This is returns a query from /department/<id>/superDo
+
+```javascript
+DepartmentSchema.methods.superDo = function DepartmentSchema$hello(data){
+   return Department.find({
+       _id:this._id
+   });
+}
+```
+
 ##Examples.
 An example of a customized rest service can be found at
 

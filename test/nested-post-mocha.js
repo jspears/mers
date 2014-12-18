@@ -10,7 +10,11 @@ var mmongoose = require('mongoose'),
     Schema = mongoose.Schema,
     json = JSON.stringify,
     compat = require('../lib/compat'),
-    app = express();
+    app = express(),
+    Promise = require('mongoose/node_modules/mpromise'),
+    promise = function(){
+        return new Promise();
+    };
 
 var EmployeeSchema = new Schema({
     firstname: {
@@ -38,14 +42,28 @@ var DepartmentSchema = new Schema({
     },
     employees: [EmployeeSchema]
 });
+DepartmentSchema.methods.hello = function DepartmentSchema$hello(){
+    return {name:'hello '+this.name};
+}
+DepartmentSchema.methods.promises = function DepartmentSchema$hello(data){
+    var p = promise();
+    setTimeout(p.resolve.bind(p, null, {name:'hello '+this.name}), 100);
+    return p;
+}
+DepartmentSchema.methods.superDo = function DepartmentSchema$hello(data){
+   return Department.find({
+       _id:this._id
+   });
+}
+
 var mongoose = mmongoose.createConnection();
 var Employee = mongoose.model('Employee', EmployeeSchema), Department = mongoose.model('Department', DepartmentSchema), Group = mongoose.model('Group', GroupSchema), d1;
 
 app.use(compat.bodyParser());
 app.use('/rest', rest({ mongoose: mongoose }).rest())
-var connected = false;
+var connected = false, _id = mongoose.base.Types.ObjectId();
 function insert(done) {
-    new Department({name: 'HR', employees: [new Employee({firstname: 'John'}), new Employee({firstname: 'Bob'})]}).save(function (e, o) {
+    new Department({_id:_id, name: 'HR', employees: [new Employee({firstname: 'John'}), new Employee({firstname: 'Bob'})]}).save(function (e, o) {
         d1 = o;
 
         done();
@@ -77,6 +95,45 @@ describe('testing nested', function () {
                 done();
             })
     })
+    it ('should invoke a method', function(done){
+        request(app)
+            .get('/rest/Department/' + _id + '/hello')
+            .set('Content-Type', 'application/json')
+            .send(json({"firstname": "Richard"})).expect(200).end(function (err, res) {
+                console.log('response', err, res);
+                res.body.should.have.property('status', 0);
+                var payload = res.body.should.have.property('payload').obj;
+                payload[0].should.have.property('name', 'hello HR');
+
+                done();
+            })
+    })
+    it('should invoke a method that returns a promise', function(done){
+        request(app)
+            .get('/rest/Department/' + _id + '/promises')
+            .set('Content-Type', 'application/json')
+            .send(json({"firstname": "Richard"})).expect(200).end(function (err, res) {
+                console.log('response', err, res);
+                res.body.should.have.property('status', 0);
+                var payload = res.body.should.have.property('payload').obj;
+                payload[0].should.have.property('name', 'hello HR');
+
+                done();
+            })
+    });
+    it('should invoke a method that returns an exec', function(done){
+        request(app)
+            .get('/rest/Department/' + _id + '/superDo')
+            .set('Content-Type', 'application/json')
+            .send(json({"firstname": "Richard"})).expect(200).end(function (err, res) {
+                console.log('response', err, res);
+                res.body.should.have.property('status', 0);
+                var payload = res.body.should.have.property('payload').obj;
+                payload[0].should.have.property('name', 'HR');
+
+                done();
+            })
+    });
     it('should post nested objects', function(done){
         request(app).post('/rest/Group').set('Content-Type', 'application/json')
             .send(json({'name':'test', employees:[{firstname:'John'}, {firstname:'Suzy'}]}))
