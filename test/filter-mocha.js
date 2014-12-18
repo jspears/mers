@@ -19,21 +19,22 @@ var UserSchema = new Schema({
 
 var User = mongoose.model('User', UserSchema);
 app.use(compat.bodyParser());
-app.use('/rest', rest({ mongoose: mongoose }).rest())
+app.use('/rest', rest({ mongoose: mongoose }).rest());
 
 d = new Date();
 function date(offset) {
     return new Date(d.getTime() + offset);
 }
-var score = 0;
-var usernames = ['abc', 'def', 'acc', 'dff']
 
-var isSetup = false;
+var score = 0;
+
+var usernames = ['abc', 'def', 'acc', 'dff'];
+
 var connected = false;
 before(function onBefore(done) {
     console.log('filter-mocha');
-    var connection = mongoose;
-    connection.on('connected', function () {
+
+    mongoose.on('connected', function () {
         if (connected) return;
         connected = true;
         mongoose.db.dropDatabase(function(){
@@ -57,9 +58,9 @@ function insert(done) {
         });
         console.log('saving ', u.username);
         u.save(doneSave);
-    }
+    };
 
-    var doneSave = function (err, obj) {
+    var doneSave = function (err) {
         if (err) {
             console.log('error', err);
         }
@@ -70,7 +71,7 @@ function insert(done) {
             save(us.shift());
         }
 
-    }
+    };
     save(us.shift());
 }
 describe('filtering conditions', function () {
