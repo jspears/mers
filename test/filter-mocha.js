@@ -110,7 +110,7 @@ describe('filtering conditions', function () {
 
             })
     });
-    /*
+
     it('should filter less than date', function (done) {
         request(app)
             .get("/rest/User?filter[meta][created]=<" + (date(-10000 * 3).toJSON()))
@@ -127,6 +127,6 @@ describe('filtering conditions', function () {
                 done();
 
             })
-    });*/
+    });
 
 });
