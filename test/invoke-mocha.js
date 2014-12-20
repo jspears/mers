@@ -49,7 +49,7 @@ function test(obj, path, value, description, asserter) {
     } catch (e) {
         console.log(c, 'failed', description, e.message)
     }
-    assert.ok(this.invoked, "callback not invoked");
+    assert.ok(this.invoked, "callback invoked");
 }
 describe('invoker', function () {
     it('should invoke stuff', function () {
@@ -93,9 +93,12 @@ describe('invoker', function () {
            session:{a:2, b:1},
            body:{a:3, du:3, b:2}
        }
-       var args = invoker.resolve(function(query$a, session$a, body$du, none, query$none, any$b, b, require$$$test$support$junk){
-           return slice(arguments);
-       }, scope);
+        var ctx = {
+            hello:1
+        }
+       var args = invoker.resolve(function myVeryFineFunction$withStuff(query$a, session$a, body$du, none, query$none, any$b, b, require$$$test$support$junk){
+           return slice(arguments).concat(this);
+       }, ctx, scope);
         assert.strictEqual(args[0], 1, "resolved query$a");
         assert.strictEqual(args[1], 2, "resolved session$a");
         assert.strictEqual(args[2], 3, "resolved body$du");
@@ -104,6 +107,8 @@ describe('invoker', function () {
         assert.strictEqual(args[5], 2, "resolved any$b");
         assert.strictEqual(args[6], 2, "resolved any b");
         assert.strictEqual(args[7].junk, 1, "resolved module.junk ");
+        assert.strictEqual(args[8], ctx, "scope check ");
+        assert.strictEqual(args.length, 9, "argument length");
 
     });
 });

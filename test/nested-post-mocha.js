@@ -160,7 +160,7 @@ describe('testing nested', function () {
                });
         });
     })
-    it.only('should invoke a method that returns an exec and pass parameters', function(done){
+    it('should invoke a method that returns an exec and pass parameters', function(done){
         request(app)
             .get('/rest/Department/' + _id + '/doStuff?name=bob')
             .set('Content-Type', 'application/json')
