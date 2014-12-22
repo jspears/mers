@@ -10,7 +10,7 @@ function resolveErr(promise, val, timeout) {
         promise.resolve(val);
     }, timeout);
 }
-describe.only('when all resolved', function () {
+describe('when all resolved', function () {
 
     it('should resolve a promise when all children have been resolved', function (done) {
 
@@ -97,6 +97,38 @@ describe.only('when all resolved', function () {
         });
         resolve(p1, 1, 300);
         resolve(p2, 2, 100);
+    })
+    it('should resolve when there are no promises', function (done) {
+        util.when().then(function () {
+            done()
+        });
+    });
+    it('should resolve when there are no promises in multiple args', function (done) {
+        util.when([], []).then(function () {
+            done()
+        });
+    })
+    it('should resolve when there are no promises and values', function (done) {
+        util.when([1, 2, 3]).then(function (args) {
+            args.should.have.property(0, 1);
+            args.should.have.property(1, 2);
+            args.should.have.property(2, 3);
+            args.should.have.property('length', 3);
+            done()
+        });
+    })
+    it('should resolve when there are no promises and values are functions', function (done) {
+        var f1 = function () {
+            return 1;
+        }, f2 = function () {
+            return 2;
+        };
+        util.when(f1, f2).then(function (args) {
+            args.should.have.property(0, f1);
+            args.should.have.property(1, f2);
+            args.should.have.property('length', 2);
+            done()
+        });
     })
 
 });
