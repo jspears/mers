@@ -277,6 +277,7 @@ we have an injection system.
 
 It resolves the prefix of the parameter name deliminated by $ to the scope.  The built in resolvers are
 session,
+param,
 query,
 body,
 require
@@ -297,12 +298,12 @@ DepartmentSchema.static.byName = function DepartmentSchema$hello(query$name){
 works on instances to...
 
 ```
-url: http://localhost/rest/department/<id>/update/?name=STuff
+url: http://localhost/rest/department/<id>/hello/?name=STuff
 ```
 
 
 ```javascript
-DepartmentSchema.static.byName = function DepartmentSchema$hello(query$name, session$user){
+DepartmentSchema.method.hello = function DepartmentSchema$hello(query$name, session$user){
     //session.user === session$user
    return Department.find({
         name:query$name
