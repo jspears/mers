@@ -94,8 +94,8 @@ describe('invoker', function () {
            body:{a:3, du:3, b:2}
        }
        var args = invoker.resolve(function(query$a, session$a, body$du, none, query$none, any$b, b, require$$$test$support$junk){
-           return slice(arguments);
-       }, scope);
+           return slice(arguments).concat(this);
+       }, {junk:1}, scope);
         assert.strictEqual(args[0], 1, "resolved query$a");
         assert.strictEqual(args[1], 2, "resolved session$a");
         assert.strictEqual(args[2], 3, "resolved body$du");
