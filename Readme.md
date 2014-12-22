@@ -247,7 +247,7 @@ This is returns a promise from /department/<id>/promises.  Really you just
 need to return an object with an then function.  So any promise library should work.
 
 ```javascript
-DepartmentSchema.methods.promises = function DepartmentSchema$hello(data){
+DepartmentSchema.methods.promises = function (data){
     var p = promise();
     setTimeout(p.resolve.bind(p, null, {name:'hello '+this.name}), 100);
     return p;
@@ -269,3 +269,45 @@ DepartmentSchema.methods.superDo = function DepartmentSchema$hello(data){
 An example of a customized rest service can be found at
 
     https://github.com/jspears/backbone-directory
+
+
+##Parameter injection
+When invoking a method you often need data from the request to process.  To do this
+we have an injection system.   
+
+It resolves the prefix of the parameter name deliminated by $ to the scope.  The built in resolvers are
+session,
+query,
+body,
+require
+
+```
+url: http://localhost/rest/department/finders/byName?name=Stuff
+```
+
+
+```javascript
+DepartmentSchema.static.byName = function DepartmentSchema$hello(query$name){
+   return Department.find({
+        name:query$name
+       });
+}
+```
+
+works on instances to...
+
+```
+url: http://localhost/rest/department/<id>/update/?name=STuff
+```
+
+
+```javascript
+DepartmentSchema.static.byName = function DepartmentSchema$hello(query$name, session$user){
+    //session.user === session$user
+   return Department.find({
+        name:query$name
+       });
+       
+}
+```
+

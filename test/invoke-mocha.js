@@ -87,7 +87,7 @@ describe('invoker', function () {
         //test for correct scope binding.
         assert.strictEqual(scope.count, 1, "injected arg 1");
     });
-    it.only('should resolve arguments', function(){
+    it('should resolve arguments', function(){
        var scope = {
            query:{a:1},
            session:{a:2, b:1},
