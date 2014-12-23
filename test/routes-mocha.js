@@ -224,19 +224,6 @@ describe('routes', function () {
         });
     });
 
-    describe('make a raw mongodb call', function () {
-        it('should not crash', function (done) {
-            request(app).get('/rest/blogpost/finder/findRaw').end(function (err, res) {
-                if (err)
-                    console.log('err', err, res);
-                res.should.have.property('statusCode', 200);
-                res.body.should.have.property('status', 0);
-
-                done();
-            });
-        });
-    });
-
     describe('update a nested array', function () {
         it('put should update a nested array', function (done) {
             createPost({
@@ -377,7 +364,7 @@ describe('routes', function () {
     });
     describe('it should allow for callback returned from finders', function () {
 
-        it.only('should return', function (done) {
+        it.only('should return the post', function (done) {
             createPost(function afterCreatePost(post) {
                 request(app).get('/rest/blogpost/finder/findByCallback?id=' + post._id).set('Content-Type', 'application/json').end(function onEndFind(err, res) {
                     if (err) return done();

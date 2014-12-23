@@ -276,7 +276,7 @@ describe('read only mers routes', function () {
                 done();
             });
         })
-        it('should return post c ', function (done) {
+        it('should return post c and filter by title', function (done) {
             request(app).get('/rest/blogpost/finder/findTitleLike?title=Post&filter[title]=C').end(function (err, res) {
 
                 res.should.have.property('statusCode', 200);
