@@ -63,9 +63,8 @@ module.exports = function (m) {
     }
     BlogPostSchema.statics.findByCallback = function onFindByCallback(q) {
         var self = this, id = q.id;
-        return function onFindByCallback$Callback(cb) {
-            self.findById(id).exec(cb);
-        }
+
+        return this.findById(id);
     }
     /**
      * This is just an example, if this proves useful, may make it part of mers.

@@ -377,7 +377,7 @@ describe('routes', function () {
     });
     describe('it should allow for callback returned from finders', function () {
 
-        it('should return', function (done) {
+        it.only('should return', function (done) {
             createPost(function afterCreatePost(post) {
                 request(app).get('/rest/blogpost/finder/findByCallback?id=' + post._id).set('Content-Type', 'application/json').end(function onEndFind(err, res) {
                     if (err) return done();
