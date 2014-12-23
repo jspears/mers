@@ -123,6 +123,7 @@ describe('testing nested', function () {
             })
     })
     it('should invoke a method that returns a promise', function (done) {
+        this.timeout(5000);
         request(app)
             .get('/rest/Department/' + _id + '/promises')
             .set('Content-Type', 'application/json')

@@ -77,6 +77,7 @@ var data = [
 ]
 
 describe('read only mers routes', function () {
+    this.timeout(5000);
     describe('GET /rest/blogpost with search options', function () {
         it('should be able to skip and limit', function (done) {
             request(app).get('/rest/blogpost?skip=1&limit=1').end(function (err, res) {
