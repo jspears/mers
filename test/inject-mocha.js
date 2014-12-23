@@ -53,6 +53,7 @@ function test(obj, path, value, description, asserter) {
 }
 describe('inject', function () {
     it('should invoke stuff', function (done) {
+        this.timeout(5000);
         when(
             test(obj, "deep/fail", "hello", "test failure handling", function (description, value, err, v) {
                 assert.ok(err != null, "err should not be null");
@@ -66,6 +67,8 @@ describe('inject', function () {
             test(obj, 'array/0', 1, "test array direct"),
             test(obj, 'stuff/0/a', 1, "test array than object")
         ).then(function () {
+                done();
+            },function(e,v){
                 done();
             })
     });
