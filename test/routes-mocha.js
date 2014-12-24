@@ -31,7 +31,7 @@ describe('routes', function () {
         });
         connection.close();
     });
-    
+
 
     describe('GET /rest/blogpost', function () {
         it('should return empty list', function (done) {
