@@ -19,9 +19,7 @@ describe('routes', function () {
     });
 
     beforeEach(function (done) {
-
         connection.db.dropDatabase(function () {
-            console.log('dropped routes-mocha');
             done();
         });
     });
@@ -33,11 +31,7 @@ describe('routes', function () {
         });
         connection.close();
     });
-
-    function setup(done) {
-        console.log('setup called');
-        done();
-    }
+    
 
     describe('GET /rest/blogpost', function () {
         it('should return empty list', function (done) {

@@ -92,7 +92,6 @@ describe('filtering conditions', function () {
         request(app)
             .get('/rest/User?filter[username]=>abc')
             .expect(200).end(function (err, res) {
-                console.log('response', res.body);
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;
 
@@ -104,7 +103,6 @@ describe('filtering conditions', function () {
         request(app)
             .get('/rest/User?filter[count]=>1')
             .expect(200).end(function (err, res) {
-                console.log('response', res.body);
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;
 
@@ -116,7 +114,6 @@ describe('filtering conditions', function () {
         request(app)
             .get('/rest/User?filter[count]=<1')
             .expect(200).end(function (err, res) {
-                console.log('response', res.body);
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;
 
@@ -133,7 +130,6 @@ describe('filtering conditions', function () {
                     console.log('Error', res, err);
                     done(err);
                 }
-                console.log('response', res.body);
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;
                 payload.should.have.length(2);
