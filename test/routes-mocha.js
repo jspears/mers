@@ -2,27 +2,38 @@ process.env.NODE_ENV = 'test';
 require('should');
 var app, request = require('./support/http'), mongoose = require('mongoose'), _u = require('underscore'), assert = require('assert'), json = JSON.stringify;
 var d = 0;
-var connection = mongoose.createConnection();
-before(function onBefore(done) {
-    console.log('before routes-mocha');
-    connection.on('connected', function () {
 
-        console.log('connected routes-mocha');
-        app = require('../example/server.js')(connection);
-
-
-        done();
-    });
-    connection.open('mongodb://localhost/routes_mocha');
-});
-beforeEach(function (done) {
-    connection.db.dropDatabase(function () {
-        console.log('dropped routes-mocha');
-        done();
-    });
-});
 
 describe('routes', function () {
+
+    var connection = mongoose.createConnection();
+    before(function onBefore(done) {
+        console.log('before routes-mocha');
+        connection.on('connected', function () {
+
+            console.log('connected routes-mocha');
+            app = require('../example/server.js')(connection);
+            done();
+        });
+        connection.open('mongodb://localhost/routes_mocha');
+    });
+
+    beforeEach(function (done) {
+
+        connection.db.dropDatabase(function () {
+            console.log('dropped routes-mocha');
+            done();
+        });
+    });
+    after(function onAfter(done) {
+
+        connection.on('disconnected', function () {
+            console.log('disconnected');
+            done();
+        });
+        connection.close();
+    });
+
     function setup(done) {
         console.log('setup called');
         done();
@@ -31,14 +42,13 @@ describe('routes', function () {
     describe('GET /rest/blogpost', function () {
         it('should return empty list', function (done) {
             request(app).get('/rest/blogpost')
-                .expect('Content-Type', /json/)
                 .expect(200)
                 .end(function (err, res) {
                     if (err)
                         console.log('ERROR', arguments);
 
 
-                    res.should.have.property('body');
+//                    res.should.have.property('body');
                     res.body.should.have.property('payload').with.lengthOf(0);
                     res.body.should.have.property('total', 0);
 
@@ -99,11 +109,13 @@ describe('routes', function () {
             })
         });
         it('put comments[1] to the blogpost', function (done) {
-            createPost({ title: 'put', body: 'stuff', comments: [
-                {title: '123'},
-                {title: '345'},
-                {title: '456'}
-            ] }, function (post) {
+            createPost({
+                title: 'put', body: 'stuff', comments: [
+                    {title: '123'},
+                    {title: '345'},
+                    {title: '456'}
+                ]
+            }, function (post) {
                 request(app)
                     .put('/rest/blogpost/' + post._id + '/comments/1')
                     .set('Content-Type', 'application/json')
@@ -163,7 +175,8 @@ describe('routes', function () {
             });
         });
         it('should be accessible from an url', function (done) {
-            createPost({ title: 'Yup',
+            createPost({
+                title: 'Yup',
                 body: 'Do you like my body?',
                 comments: [
                     {body: 'Do you like my body?'}
@@ -253,7 +266,7 @@ describe('routes', function () {
                         }
                     ]
                     },
-                    { title: 'comment 2', body: 'comment2'}
+                    {title: 'comment 2', body: 'comment2'}
                 ]
 
             }, function (post) {
@@ -299,7 +312,7 @@ describe('routes', function () {
                         }
                     ]
                     },
-                    { title: 'comment 2', body: 'comment2'}
+                    {title: 'comment 2', body: 'comment2'}
                 ]
 
             }, function (post) {
@@ -345,7 +358,7 @@ describe('routes', function () {
                         }
                     ]
                     },
-                    { title: 'comment 2', body: 'comment2'}
+                    {title: 'comment 2', body: 'comment2'}
                 ]
 
             }, function (post) {
@@ -364,7 +377,7 @@ describe('routes', function () {
     });
     describe('it should allow for callback returned from finders', function () {
 
-        it.only('should return the post', function (done) {
+        it('should return the post', function (done) {
             createPost(function afterCreatePost(post) {
                 request(app).get('/rest/blogpost/finder/findByCallback?id=' + post._id).set('Content-Type', 'application/json').end(function onEndFind(err, res) {
                     if (err) return done();
@@ -377,7 +390,7 @@ describe('routes', function () {
     });
     it('should allow for transformers on post', function (done) {
 
-        setupPost(null, '/rest/blogpost_t').end(function(e,res){
+        setupPost(null, '/rest/blogpost_t').end(function (e, res) {
             var body = res.body;
             body.should.have.property('payload');
             body.payload.should.have.property('label', 'stuff');
@@ -412,14 +425,14 @@ var t = 0;
 
 function setupPost(opts, url) {
     if (!opts) {
-        opts = { title: 'Test ' + (t), body: 'default body for ' + t};
+        opts = {title: 'Test ' + (t), body: 'default body for ' + t};
         t++;
     }
 
     return request(app)
         .post(url || '/rest/blogpost')
         .set('Content-Type', 'application/json')
-        .send(json(_u.extend({ date: new Date() }, opts)));
+        .send(json(_u.extend({date: new Date()}, opts)));
 }
 function createPost(opts, cb) {
     if (!cb) {

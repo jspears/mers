@@ -7,35 +7,6 @@ var json = JSON.stringify;
 var d = 0;
 var connected = false;
 var pids = [];
-before(function onBefore(done) {
-    console.log('before routes-mocha');
-
-    var mongoose = require('mongoose').createConnection();
-    mongoose.on('connected', function () {
-        var db = mongoose.db;
-        db.dropDatabase(function () {
-            if (connected) return;
-            connected = true;
-            var count = 0;
-            app = require('../example/server.js')(mongoose);
-            var BlogPost = mongoose.model('BlogPost');
-            data.forEach(function (d, i) {
-                new BlogPost(d).save(function (e, o) {
-                    if (e) return done();
-                    pids[i] = o._id;
-                    d._id = o._id + "";
-                    if (data.length === ++count) {
-
-                        done();
-
-                    }
-                });
-            });
-        });
-    })
-    if (mongoose.readyState === 1) mongoose.close();
-    mongoose.open('mongodb://localhost/routes-mocha-read');
-});
 
 var data = [
     {title: 'Post A', body: 'A'},
@@ -68,7 +39,7 @@ var data = [
                 }
             ]
             },
-            { title: 'comment 2', body: 'comment2'}
+            {title: 'comment 2', body: 'comment2'}
         ]
 
     }
@@ -77,7 +48,58 @@ var data = [
 ]
 
 describe('read only mers routes', function () {
-    this.timeout(5000);
+    var connection;
+
+    before(function onBefore(done) {
+        console.log('before routes-mocha');
+
+        var mongoose = connection = require('mongoose').createConnection();
+        mongoose.on('connected', function () {
+            var db = mongoose.db;
+            db.dropDatabase(function () {
+                if (connected) return;
+                connected = true;
+                var count = 0;
+                app = require('../example/server.js')(mongoose);
+                var BlogPost = mongoose.model('BlogPost');
+                data.forEach(function (d, i) {
+                    new BlogPost(d).save(function (e, o) {
+                        if (e) return done();
+                        pids[i] = o._id;
+                        d._id = o._id + "";
+                        if (data.length === ++count) {
+
+                            done();
+
+                        }
+                    });
+                });
+            });
+        })
+        if (mongoose.readyState === 1) mongoose.close();
+        mongoose.open('mongodb://localhost/routes-mocha-read');
+    });
+    after(function onAfter(done) {
+        connection.on('disconnected', function () {
+            done();
+        });
+        connection.close();
+
+    });
+    describe('make a raw mongodb call', function () {
+        this.timeout(15000);
+        it('should not crash', function (done) {
+            request(app).get('/rest/blogpost/finder/findRaw').end(function (err, res) {
+                if (err)
+                    console.log('err', err, res);
+                res.should.have.property('statusCode', 200);
+                res.body.should.have.property('status', 0)
+
+                done();
+            });
+        })
+
+    })
     describe('GET /rest/blogpost with search options', function () {
         it('should be able to skip and limit', function (done) {
             request(app).get('/rest/blogpost?skip=1&limit=1').end(function (err, res) {
@@ -109,19 +131,7 @@ describe('read only mers routes', function () {
             })
         })
 
-        describe('make a raw mongodb call', function () {
-            it('should not crash', function (done) {
-                request(app).get('/rest/blogpost/finder/findRaw').end(function (err, res) {
-                    if (err)
-                        console.log('err', err, res);
-                    res.should.have.property('statusCode', 200);
-                    res.body.should.have.property('status', 0)
 
-                    done();
-                });
-            })
-
-        })
         describe('nested array calls', function () {
             it('should allow for nested arrays of things', function (done) {
                 request(app).get('/rest/blogpost/' + data[5]._id + '/comments/0/posts/1/posts/0').end(function (err, resp) {
@@ -236,7 +246,7 @@ describe('read only mers routes', function () {
                 res.should.have.property('statusCode', 200);
                 res.should.have.property('body');
                 res.body.payload.should.have.lengthOf(2);
-                res.body.payload.should.matchEach(function(v){
+                res.body.payload.should.matchEach(function (v) {
                     return /Post C/.test(v.label);
                 })
                 //      res.body.should.have.property('total', 4);
@@ -268,7 +278,7 @@ describe('read only mers routes', function () {
                 res.should.have.property('statusCode', 200);
                 res.should.have.property('body');
                 res.body.payload.should.have.lengthOf(2);
-                res.body.payload.should.matchEach(function(v){
+                res.body.payload.should.matchEach(function (v) {
                     return /Post C/.test(v.title);
                 })
                 res.body.should.have.property('total', 2);
@@ -282,7 +292,7 @@ describe('read only mers routes', function () {
                 res.should.have.property('statusCode', 200);
                 res.should.have.property('body');
                 res.body.payload.should.have.lengthOf(2);
-                res.body.payload.should.matchEach(function(v){
+                res.body.payload.should.matchEach(function (v) {
                     return /Post C/.test(v.title);
                 })
                 res.body.should.have.property('total', 6);
@@ -298,7 +308,7 @@ describe('read only mers routes', function () {
                 res.body.payload.should.have.lengthOf(2);
 //                res.body.payload[0].should.title.should('title', 'Post C');
 //                res.body.payload[1].should.have.property('title', 'Post CD');
-                res.body.payload.should.matchEach(function(v){
+                res.body.payload.should.matchEach(function (v) {
                     return /Post C/.test(v.title);
                 })
                 done();

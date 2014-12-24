@@ -10,7 +10,7 @@ var mmongoose = require('mongoose'),
     Schema = mongoose.Schema,
     json = JSON.stringify,
     compat = require('../lib/compat'),
-    app = express(),
+
     Promise = require('mongoose/node_modules/mpromise'),
     promise = function () {
         return new Promise();
@@ -21,7 +21,8 @@ var EmployeeSchema = new Schema({
         type: String,
         required: true,
         trim: true
-    }});
+    }
+});
 var GroupSchema = new Schema();
 
 GroupSchema.add({
@@ -65,43 +66,58 @@ DepartmentSchema.methods.nestedInject = function DepartmentSchema$echoName(query
     var name = this.name;
     return {
         name: function (body$nested) {
-            return name + ' ' + query$name+ ' '+body$nested;
+            return name + ' ' + query$name + ' ' + body$nested;
         }
     }
 }
 
 var mongoose = mmongoose.createConnection();
 var Employee = mongoose.model('Employee', EmployeeSchema), Department = mongoose.model('Department', DepartmentSchema), Group = mongoose.model('Group', GroupSchema), d1;
-
-app.use(compat.bodyParser());
-app.use('/rest', rest({ mongoose: mongoose }).rest())
+function makeApp() {
+    app = express();
+    app.use(compat.bodyParser());
+    app.use('/rest', rest({mongoose: mongoose}).rest())
+}
 var connected = false, _id = mongoose.base.Types.ObjectId();
 function insert(done) {
-    new Department({_id: _id, name: 'HR', employees: [new Employee({firstname: 'John'}), new Employee({firstname: 'Bob'})]}).save(function (e, o) {
+    new Department({
+        _id: _id,
+        name: 'HR',
+        employees: [new Employee({firstname: 'John'}), new Employee({firstname: 'Bob'})]
+    }).save(function (e, o) {
         d1 = o;
 
         done();
     });
 }
 
-before(function NestedPostTest$onBefore(done) {
-    console.log('nested-post onBefore');
-    mongoose.on('connected', function () {
-        mongoose.db.dropDatabase(function () {
-            insert(done);
-        })
-    });
-    mongoose.open('mongodb://localhost/nested_post_test')
-});
-
 describe('testing nested', function () {
+
+    before(function NestedPostTest$onBefore(done) {
+        makeApp();
+
+        console.log('nested-post onBefore');
+        mongoose.on('connected', function () {
+            mongoose.db.dropDatabase(function () {
+                insert(done);
+            })
+        });
+        mongoose.open('mongodb://localhost/nested_post_test')
+    });
+
+    after(function NestedPostTest$onAfter(done) {
+        mongoose.on('disconnected', function () {
+            done();
+        })
+        mongoose.close();
+
+    });
     it('should post', function (done) {
         console.log('finding ' + d1._id);
         request(app)
             .post('/rest/Department/' + d1._id + '/employees')
             .set('Content-Type', 'application/json')
             .send(json({"firstname": "Richard"})).expect(200).end(function (err, res) {
-                console.log('response', err, res);
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;
                 payload.should.have.property('firstname', 'Richard');
@@ -114,7 +130,6 @@ describe('testing nested', function () {
             .get('/rest/Department/' + _id + '/hello')
             .set('Content-Type', 'application/json')
             .send(json({"firstname": "Richard"})).expect(200).end(function (err, res) {
-                console.log('response', err, res);
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;
                 payload[0].should.have.property('name', 'hello HR');
@@ -128,7 +143,6 @@ describe('testing nested', function () {
             .get('/rest/Department/' + _id + '/promises')
             .set('Content-Type', 'application/json')
             .send(json({"firstname": "Richard"})).expect(200).end(function (err, res) {
-                console.log('response', err, res);
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;
                 payload[0].should.have.property('name', 'hello HR');
@@ -141,7 +155,6 @@ describe('testing nested', function () {
             .get('/rest/Department/' + _id + '/superDo')
             .set('Content-Type', 'application/json')
             .send(json({"firstname": "Richard"})).expect(200).end(function (err, res) {
-                console.log('response', err, res);
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;
                 payload[0].should.have.property('name', 'HR');
@@ -151,20 +164,19 @@ describe('testing nested', function () {
     });
     it('should post nested objects', function (done) {
         request(app).post('/rest/Group').set('Content-Type', 'application/json')
-            .send(json({'name': 'test', employees: [
-                {firstname: 'John'},
-                {firstname: 'Suzy'}
-            ]}))
+            .send(json({
+                'name': 'test', employees: [
+                    {firstname: 'John'},
+                    {firstname: 'Suzy'}
+                ]
+            }))
             .end(function (err, res) {
-                console.log(res);
                 done();
             });
     });
     it('should get nested objects with method', function (done) {
         request(app).get('/rest/department/' + _id + '/echoName?name=hi').set('Content-Type', 'application/json')
             .end(function (err, res) {
-                console.log(res);
-                // resp.body.should.not.have.property('error');
                 res.body.should.have.property('payload');
                 res.body.should.have.property('status', 0);
                 res.body.payload[0].should.be.equal('HR hi');
@@ -176,7 +188,6 @@ describe('testing nested', function () {
             .send(json({nested: 'test'}))
             .set('Content-Type', 'application/json')
             .end(function (err, res) {
-                console.log(res);
                 // resp.body.should.not.have.property('error');
                 res.body.should.have.property('payload');
                 res.body.should.have.property('status', 0);

@@ -52,6 +52,14 @@ function test(obj, path, value, description, asserter) {
     return p;
 }
 describe('inject', function () {
+    it('should extract a single parameter', function(){
+       var ret = invoker.extractArgNames(function(query$name){});
+       ret.should.have.property(0, 'query$name');
+    });
+    it('should extract a single parameter with a named function', function(){
+        var ret = invoker.extractArgNames(function query$name(query$name){});
+        ret.should.have.property(0, 'query$name');
+    });
     it('should invoke stuff', function (done) {
         this.timeout(5000);
         when(

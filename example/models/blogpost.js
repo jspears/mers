@@ -29,8 +29,8 @@ module.exports = function (m) {
      * @param q
      * @param term
      */
-    BlogPostSchema.statics.findTitleLike = function findTitleLike(q, term) {
-        var search = term || q && q.title;
+    BlogPostSchema.statics.findTitleLike = function findTitleLike(query$title) {
+        var search = query$title;
         if (!search)
             return this.find({_id: null});
 
