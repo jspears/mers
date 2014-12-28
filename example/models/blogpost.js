@@ -29,8 +29,8 @@ module.exports = function (m) {
      * @param q
      * @param term
      */
-    BlogPostSchema.statics.findTitleLike = function findTitleLike(query$title) {
-        var search = query$title;
+    BlogPostSchema.statics.findTitleLike = function findTitleLike(query$title, params$) {
+        var search = query$title || params$.shift();
         if (!search)
             return this.find({_id: null});
 
@@ -49,7 +49,7 @@ module.exports = function (m) {
      * @param q
      * @return {Function}
      */
-    BlogPostSchema.statics.findRaw = function onFindRaw(q) {
+    BlogPostSchema.statics.findRaw = function onFindRaw(query$) {
         var collection = this.collection;
         return new CallbackQuery(function (cb) {
             collection.find(function (err, cursor) {

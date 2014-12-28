@@ -1,11 +1,8 @@
 process.env.NODE_ENV = 'test';
 require('should');
-var request = require('./support/http'), mongoose, _u = require('underscore');
+var request = require('./support/http'), assert = require('assert'), mongoose, _u = require('underscore'), json = JSON.stringify;
 var app;
-var assert = require('assert');
-var json = JSON.stringify;
 var d = 0;
-var connected = false;
 var pids = [];
 
 var data = [
@@ -49,18 +46,16 @@ var data = [
 
 describe('read only mers routes', function () {
     var connection;
-
+    this.timeout(50000);
     before(function onBefore(done) {
         console.log('before routes-mocha');
-
         var mongoose = connection = require('mongoose').createConnection();
+        app = require('../example/server.js')(mongoose);
         mongoose.on('connected', function () {
             var db = mongoose.db;
             db.dropDatabase(function () {
-                if (connected) return;
-                connected = true;
                 var count = 0;
-                app = require('../example/server.js')(mongoose);
+
                 var BlogPost = mongoose.model('BlogPost');
                 data.forEach(function (d, i) {
                     new BlogPost(d).save(function (e, o) {
@@ -86,20 +81,28 @@ describe('read only mers routes', function () {
         connection.close();
 
     });
-    describe('make a raw mongodb call', function () {
-        this.timeout(15000);
-        it('should not crash', function (done) {
-            request(app).get('/rest/blogpost/finder/findRaw').end(function (err, res) {
-                if (err)
-                    console.log('err', err, res);
-                res.should.have.property('statusCode', 200);
-                res.body.should.have.property('status', 0)
 
-                done();
-            });
+    it('should allow for nested arrays of things', function (done) {
+        request(app).get('/rest/blogpost/' + data[5]._id + '/comments/0/posts/1/posts/0').end(function (err, resp) {
+            console.log(resp.body);
+            resp.body.should.have.property('payload');
+            resp.body.payload.should.have.property('body', 'world3-3');
+            done();
         })
+    });
+    it('make a raw mongodb call should not crash', function (done) {
+        request(app).get('/rest/blogpost/finder/findRaw').end(function (err, res) {
+            if (err) {
+                console.log('err', err, res);
+                return done(err);
+            }
+            res.should.have.property('statusCode', 200);
+            res.body.should.have.property('status', 0)
 
-    })
+            done();
+        });
+    });
+
     describe('GET /rest/blogpost with search options', function () {
         it('should be able to skip and limit', function (done) {
             request(app).get('/rest/blogpost?skip=1&limit=1').end(function (err, res) {
@@ -114,7 +117,7 @@ describe('read only mers routes', function () {
 
 
         describe('should handle errors without crashing when calling an invalid id', function () {
-            it('should not crash', function (done) {
+            it('should not crash with invalid id', function (done) {
                 request(app).get('/rest/blogpost/junk').end(function (err, res) {
                     res.should.have.property('statusCode', 200);
                     res.body.should.have.property('status', 1)
@@ -122,7 +125,7 @@ describe('read only mers routes', function () {
                     done();
                 });
             })
-            it('should not crash', function (done) {
+            it('should not crash with null end', function (done) {
                 request(app).get('/rest/blogpost/').end(function (err, res) {
                     res.should.have.property('statusCode', 200);
 
@@ -131,17 +134,6 @@ describe('read only mers routes', function () {
             })
         })
 
-
-        describe('nested array calls', function () {
-            it('should allow for nested arrays of things', function (done) {
-                request(app).get('/rest/blogpost/' + data[5]._id + '/comments/0/posts/1/posts/0').end(function (err, resp) {
-                    console.log(resp.body);
-                    resp.body.should.have.property('payload');
-                    resp.body.payload.should.have.property('body', 'world3-3');
-                    done();
-                })
-            });
-        })
 
         describe('it should be accessible', function () {
             it('should be accessible from an url with an index', function (done) {
@@ -233,7 +225,7 @@ describe('read only mers routes', function () {
 
                 res.should.have.property('statusCode', 200);
                 res.should.have.property('body');
-//                res.body.payload.should.have.lengthOf(2);
+                res.body.payload.should.have.lengthOf(2);
                 res.body.payload[0].should.have.property('date');
 
                 done();
@@ -286,7 +278,7 @@ describe('read only mers routes', function () {
                 done();
             });
         })
-        it.only('should return post c and filter by title', function (done) {
+        it('should return post c and filter by title', function (done) {
             request(app).get('/rest/blogpost/finder/findTitleLike?title=Post&filter[title]=C').end(function (err, res) {
 
                 res.should.have.property('statusCode', 200);
@@ -297,8 +289,8 @@ describe('read only mers routes', function () {
                 })
 
                 //TODO - Fix and reenable
-              //  res.body.should.have.property('total', 6);
-               // res.body.should.have.property('filterTotal', 2);
+                //  res.body.should.have.property('total', 6);
+                // res.body.should.have.property('filterTotal', 2);
                 done();
             });
         })

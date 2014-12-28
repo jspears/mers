@@ -188,11 +188,11 @@ describe('testing nested', function () {
             .send(json({nested: 'test'}))
             .set('Content-Type', 'application/json')
             .end(function (err, res) {
-                // resp.body.should.not.have.property('error');
+                // res.body.should.not.have.property('error');
                 res.body.should.have.property('payload');
                 res.body.should.have.property('status', 0);
                 //odd numberered depths are not arrays.
-                var r = res.body.payload
+                var r = res.body.payload+''
                 r.should.be.equal('HR hi test');
                 done();
             });
@@ -203,10 +203,10 @@ describe('testing nested', function () {
                 .set('Content-Type', 'application/json')
                 .send(json(res.body.payload))
                 .expect(200)
-                .end(function (err, resp) {
-                    resp.body.should.have.property('error');
-                    resp.body.should.not.have.property('payload');
-                    resp.body.should.have.property('status', 1);
+                .end(function (err, res) {
+                    res.body.should.have.property('error');
+                    res.body.should.not.have.property('payload');
+                    res.body.should.have.property('status', 1);
                     done();
                 });
         });
