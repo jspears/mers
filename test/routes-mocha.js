@@ -317,7 +317,7 @@ describe('routes /rest/blogpost', function () {
                     });
             });
         });
-        it.only('POST should find a nested array byid', function (done) {
+        it('POST should find a nested array byid', function (done) {
             createPost({
                 title: 'Post F',
                 body: 'Should be deep',

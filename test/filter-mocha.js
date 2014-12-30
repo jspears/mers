@@ -34,8 +34,6 @@ var score = 0;
 
 var usernames = ['abc', 'def', 'acc', 'dff'];
 
-var connected = false;
-
 
 function insert(done) {
     console.log('insert');
@@ -90,11 +88,11 @@ describe('filtering conditions', function () {
 
     it('should filter by username string', function (done) {
         request(app)
-            .get('/rest/User?filter[username]=>abc')
+            .get('/rest/User?filter[username]=abc')
             .expect(200).end(function (err, res) {
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;
-
+                payload[0].should.have.property('username', 'abc');
                 done();
 
             })
