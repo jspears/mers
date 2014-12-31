@@ -2,18 +2,23 @@ var stream = require('stream'),
     streams = require('../lib/streams')
 __ = require('underscore'), through = require('through2'), util = require('util'), inherits = util.inherits, Transform = stream.Transform;
 describe('streams', function () {
-    var tx = new streams.ToJson, ot = new streams.ObjTransformer({
-        transformers: [function $0(data) {
-            data.a = 1;
-            return data;
-        }, function $1(data) {
-            data.b = 2;
-            return data;
-        }, function $2(data) {
-            data.c = 3;
-            return data;
-        }]
-    });
+    var tx, ot;
+    beforeEach(function () {
+        tx = streams.ToJson();
+        ot = streams.ObjTransformer({
+            transformers: [function $0(data) {
+                data.a = 1;
+                return data;
+            }, function $1(data) {
+                data.b = 2;
+                return data;
+            }, function $2(data) {
+                data.c = 3;
+                return data;
+            }]
+        });
+    })
+
     it('should pipe data', function (done) {
 
 
@@ -57,13 +62,15 @@ describe('streams', function () {
     });
     it('should be able to stream from callback with error', function (done) {
         var d = require('domain').create();
-        d.on('error', function(e){
+        d.on('error', function (e) {
             console.log('stuff');
             done();
         });
+        d.add(ot);
+        d.add(tx);
         d.run(function (e) {
             ot.pipe(tx).pipe(new streams.BufferedJSONStream()).pipe(through.obj(function (d, e, c) {
-      //          done('should not have fired');
+                //          done('should not have fired');
             }));
             streams.asCallback(ot)(new Error('Err'));
         });
