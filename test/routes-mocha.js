@@ -158,7 +158,7 @@ describe('routes /rest/blogpost', function () {
                 )).end(function (err, res) {
                     res.should.have.property('statusCode', 200)
                     res.body.should.have.property('status', 1);
-                    res.body.error.should.have.property('message', 'Validation failed');
+                    res.body.error.should.have.property('error', 'Validation failed');
                     done();
                 });
         });
