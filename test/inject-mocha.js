@@ -123,4 +123,25 @@ describe('inject', function () {
             done();
         });
     });
+    it.only('should inject args for non resolved patterns', function(done){
+
+        var scope = {
+            query: {a: 1},
+            session: {a: 2, b: 1},
+            body: {a: 4, du: 4, b: 2},
+            args:[2,3]
+        }
+        invoker.resolve(function aFineQuery$here(query$a, a1, a2, body$a, a3) {
+            return slice(arguments).concat(this);
+        }, {junk: 1}, scope).then(function (args) {
+            assert.strictEqual(args[0], 1, "resolved query$a");
+            assert.strictEqual(args[1], 2, "resolved args$a1");
+            assert.strictEqual(args[2], 3, "resolved args$a2");
+            assert.strictEqual(args[3], 4, "resolved body$a");
+            assert.strictEqual(args[4], void(0), "resolved a3");
+            //     assert.strictEqual(args[6], 2, "resolved any b");
+            assert.strictEqual(args[5].junk, 1, "resolved module.junk ");
+            done();
+        });
+    })
 });
