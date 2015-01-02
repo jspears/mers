@@ -241,8 +241,8 @@ describe('read only mers routes', function () {
                 res.body.payload.should.matchEach(function (v) {
                     return /Post C/.test(v.label);
                 })
-                //      res.body.should.have.property('total', 4);
-                res.body.should.have.property('filterTotal', 2);
+                     res.body.should.have.property('total', 2);
+             //   res.body.should.have.property('filterTotal', 2);
 
                 done();
             });
@@ -256,8 +256,8 @@ describe('read only mers routes', function () {
                 res.body.payload.should.have.lengthOf(1);
                 res.body.payload[0].should.have.property('title', 'Post A');
                 //   res.body.payload[1].should.have.property('label', 'Post B');
-                res.body.should.have.property('total', 6);
-                res.body.should.have.property('filterTotal', 1);
+                res.body.should.have.property('total', 1);
+              //  res.body.should.have.property('filterTotal', 1);
 
                 done();
             });
