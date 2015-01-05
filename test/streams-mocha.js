@@ -1,6 +1,8 @@
 var stream = require('stream'),
-    streams = require('../lib/streams')
-__ = require('underscore'), through = require('through2'), util = require('util'), inherits = util.inherits, Transform = stream.Transform;
+    Readable = stream.Readable,
+    streams = require('../lib/streams'),
+    through = require('../lib/streams/through'),
+    __ = require('underscore');
 describe('streams', function () {
     var tx, ot;
     beforeEach(function () {
@@ -26,7 +28,7 @@ describe('streams', function () {
 
 
 // a simple source stream
-        var Readable = require('stream').Readable;
+
 
         var _c = 0, toJSON = function () {
             return {

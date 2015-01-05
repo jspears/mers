@@ -123,7 +123,7 @@ describe('inject', function () {
             done();
         });
     });
-    it.only('should inject args for non resolved patterns', function(done){
+    it('should inject args for non resolved patterns', function(done){
 
         var scope = {
             query: {a: 1},
