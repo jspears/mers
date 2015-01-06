@@ -2,26 +2,31 @@ var stream = require('stream'),
     Readable = stream.Readable,
     streams = require('../lib/streams'),
     through = require('../lib/streams/through'),
+    TransformerFactory = require('../lib/transformer-factory'),
+    w = require('../lib/when'),
     __ = require('underscore');
+
 describe('streams', function () {
     var tx, ot;
     beforeEach(function () {
         tx = streams.ToJson();
-        ot = streams.ObjTransformer({
-            transformers: [function $0(data) {
+        ot = new TransformerFactory({
+            transformers: { a: function $0(data) {
                 data.a = 1;
                 return data;
-            }, function $1(data) {
-                data.b = 2;
-                return data;
-            }, function $2(data) {
-                data.c = 3;
-                return data;
-            }]
+            }, b: function $1(data) {
+                var p = w.promise();
+                setTimeout(function () {
+                    data.b = 2;
+                    p.resolve(null, data);
+                }, 500);
+                return p;
+            }
+            }
         });
     })
 
-    it('should pipe data', function (done) {
+    it.only('should pipe data', function (done) {
 
 
 // a simple transform stream
@@ -35,15 +40,23 @@ describe('streams', function () {
                 a: _c++
             }
         };
-        var rs = new Readable({objectMode: true}), b = 0, a = {
-            toJSON: toJSON
-        }, b = __.extend({}, a), c = __.extend({}, b);
+        var rs = new Readable({objectMode: true}), a = {
+            toJSON: toJSON,
+            v: 'a'
+        }, b = __.extend({}, a, {v: 'b'}), c = __.extend({}, a, {v: 'c'});
         rs.push(a);
         rs.push(b);
         rs.push(c);
         rs.push(null);
-
-        rs.pipe(ot).pipe(tx).pipe(new streams.BufferedJSONStream).pipe(through.obj(function (chunk, enc, cb) {
+        ot.pump(rs, {
+            query: {a:'qa'},
+            session: {},
+            args: [1, 2, 3]
+        }, ['a', 'b', function $2(data, query$a) {
+            data.c = 3;
+            data.qa = query$a;
+            return data;
+        }]).pipe(new streams.BufferedJSONStream).pipe(through.obj(function (chunk, enc, cb) {
             console.log('chunk ' + JSON.stringify(chunk));
             chunk.should.have.property('total', 3);
             chunk.should.have.property('payload').have.property('length', 3);
