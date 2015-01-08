@@ -62,32 +62,11 @@ describe('inject', function () {
         });
         ret.should.have.property(0, 'query$name');
     });
-    it('should invoke stuff', function (done) {
-        this.timeout(5000);
-        when(
-            test(obj, "deep/fail", "hello", "test failure handling", function (description, value, err, v) {
-                assert.ok(err != null, "err should not be null");
-                assert.equal(err.message, value, description);
-            }),
-            test(obj, "nullvalue", null, "testing nullity"),
-            test(obj, "func/1/abc", 1, "test function"),
-            test(obj, "stuff/abc/c", 1, "test by id"),
-            test(obj, "property", 1, "test property"),
-            test(obj, "nested/property", 1, "test nested property"),
-            test(obj, 'array/0', 1, "test array direct"),
-            test(obj, 'stuff/0/a', 1, "test array than object")
-        ).then(function () {
-                done();
-            }, function (e, v) {
-                done();
-            })
-    });
+
 
     it('should resolve function parameter names', function () {
         var args = invoker.injectArgs(function (a, b) {
-        }, {b: 1, a: 1}, [
-            {a: 2}
-        ], {b: 2});
+        }, {b: 1, a: 1}, [{a: 2}], {b: 2});
         assert.strictEqual(args[0], 1, "injected arg 1");
         assert.strictEqual(args[1], 2, "injected arg 1");
     });
@@ -121,12 +100,12 @@ describe('inject', function () {
             assert.strictEqual(args[2], 3, "resolved body$du");
             assert.strictEqual(args[3], void(0), "resolved none");
             assert.strictEqual(args[4], void(0), "resolved query$none");
-            assert.strictEqual(args[5], 2, "resolved any$b");
+            assert.strictEqual(args[5], void(0), "resolved any$b");
             //     assert.strictEqual(args[6], 2, "resolved any b");
-            assert.strictEqual(args[7].junk, 1, "resolved module.junk ");
+            assert.strictEqual(args[8].junk, 1, "resolved module.junk ");
             done();
         }, function (e) {
-            done(e || new Error('Error in resolution'));
+            done(new Error(e));
         });
     });
     it('should inject args for non resolved patterns', function (done) {
@@ -147,35 +126,6 @@ describe('inject', function () {
             //     assert.strictEqual(args[6], 2, "resolved any b");
             assert.strictEqual(args[5].junk, 1, "resolved module.junk ");
             done();
-        }, done);
-    });
-    it('should resolve to a function that is then able to be excuted', function (done) {
-        var ctx = {
-            query: {a: 1},
-            session: {a: 2, b: 1},
-            body: {a: 4, du: 4, b: 2},
-            args: [0, 2, 3]
-        }
-        var fn = invoker.resolveBind(function aFineQuery$here(query$a, a1, a2, body$a, a3) {
-            return slice(arguments).concat(this);
         });
-
-        var args = fn.call({junk: 1}, ctx, 0, 2, 3);
-        assert.strictEqual(args[0], 1, "resolved query$a");
-        assert.strictEqual(args[1], 2, "resolved args$a1");
-        assert.strictEqual(args[2], 3, "resolved args$a2");
-        assert.strictEqual(args[3], 4, "resolved body$a");
-        assert.strictEqual(args[4], void(0), "resolved a3");
-        assert.strictEqual(args[5].junk, 1, "resolved module.junk ");
-
-        args = fn.call({junk: 2}, ctx, 0, 2, 3);
-        assert.strictEqual(args[0], 1, "resolved query$a");
-        assert.strictEqual(args[1], 2, "resolved args$a1");
-        assert.strictEqual(args[2], 3, "resolved args$a2");
-        assert.strictEqual(args[3], 4, "resolved body$a");
-        assert.strictEqual(args[4], void(0), "resolved a3");
-        assert.strictEqual(args[5].junk, 2, "resolved module.junk ");
-
-        done();
-    });
+    })
 });

@@ -11,22 +11,23 @@ describe('streams', function () {
     beforeEach(function () {
         tx = streams.ToJson();
         ot = new TransformerFactory({
-            transformers: { a: function $0(data) {
-                data.a = 1;
-                return data;
-            }, b: function $1(data) {
-                var p = w.promise();
-                setTimeout(function () {
-                    data.b = 2;
-                    p.resolve(null, data);
-                }, 500);
-                return p;
-            }
+            transformers: {
+                a: function $0(data) {
+                    data.a = 1;
+                    return data;
+                }, b: function $1(data) {
+                    var p = w.promise();
+                    setTimeout(function () {
+                        data.b = 2;
+                        p.resolve(null, data);
+                    }, 500);
+                    return p;
+                }
             }
         });
-    })
+    });
 
-    it.only('should pipe data', function (done) {
+    it('should pipe data', function (done) {
 
 
 // a simple transform stream
@@ -49,10 +50,13 @@ describe('streams', function () {
         rs.push(c);
         rs.push(null);
         ot.pump(rs, {
-            query: {a:'qa'},
+            query: {a: 'qa'},
             session: {},
             args: [1, 2, 3]
-        }, ['a', 'b', function $2(data, query$a) {
+        }, [
+            'a', 'b',
+
+            function $2(data, query$a) {
             data.c = 3;
             data.qa = query$a;
             return data;

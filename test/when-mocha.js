@@ -114,8 +114,8 @@ describe('when functions', function () {
                 args.should.have.property(1, 2);
                 args.should.have.property(2, 3);
                 args.should.have.property('length', 3);
-                done()
-            });
+                return null;
+            }).then(done);
         })
         it('should resolve when there are no promises and values are functions', function (done) {
             var f1 = function () {
