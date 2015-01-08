@@ -61,11 +61,23 @@ describe('when functions', function () {
         it('should work with one resolved promise in error', function (done) {
 
             var p1 = new Promise();
-            p1.resolve(1);
-            util.when([p1]).then(null, function (ret) {
-                ret.should.have.lengthOf(1);
-                done();
+            p1.reject(1);
+            var error;
+            util.when([p1]).then(function () {
+                error = new Error("should not have executed");
+            }, function (ret) {
+                ret.should.eql(1);
+                error = false;
             });
+            setTimeout(function () {
+                if (error) return done(error);
+                if (error !== false) {
+                    done(new Error("Should not have been called"))
+                } else {
+                    done();
+                }
+
+            }, 1000);
         });
 
         it('should short circuit on error', function (done) {

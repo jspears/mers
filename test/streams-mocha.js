@@ -70,13 +70,13 @@ describe('streams', function () {
 
     });
     it('should be able to stream from callback', function (done) {
-        ot.pipe(tx).pipe(new streams.BufferedJSONStream()).pipe(through.obj(function (d, e, c) {
+        ot.pump(tx, {}).pipe(new streams.BufferedJSONStream()).pipe(through.obj(function (d, e, c) {
             var payload = d.should.have.property('payload').obj;
             payload.should.have.property('length', 1);
             payload[0].should.have.property('t', 1);
             done();
         }));
-        streams.asCallback(ot)(null, {t: 1});
+        streams.asCallback(tx)(null, {t: 1});
 
     });
     it('should be able to stream from callback with error', function (done) {
@@ -88,10 +88,10 @@ describe('streams', function () {
         d.add(ot);
         d.add(tx);
         d.run(function (e) {
-            ot.pipe(tx).pipe(new streams.BufferedJSONStream()).pipe(through.obj(function (d, e, c) {
+            ot.pump(tx, {}).pipe(new streams.BufferedJSONStream()).pipe(through.obj(function (d, e, c) {
                 //          done('should not have fired');
             }));
-            streams.asCallback(ot)(new Error('Err'));
+            streams.asCallback(tx)(new Error('Err'));
         });
     });
 })
