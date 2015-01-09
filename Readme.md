@@ -99,9 +99,10 @@ Sorting is supported 1 ascending -1 ascending.
 
 ###Transformer
 Transformers can be registered on startup.  A simple TransformerFactory is
-included.  Something that takes security into account could be added.  Currently
-this is only supported on the get operations.   May change the responses to post
-to send location, though I find that pretty inconvient.
+included.  If the function returns a promise, it will resolve the transformer
+asynchrounously.   The transformers follow the same injection rules.
+
+
 
 
 ```javascript
@@ -280,6 +281,7 @@ session,
 param,
 query,
 body,
+args,
 require
 
 ```
@@ -311,4 +313,5 @@ DepartmentSchema.method.hello = function DepartmentSchema$hello(query$name, sess
        
 }
 ```
+
 
