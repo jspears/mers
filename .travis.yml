@@ -1,0 +1,10 @@
+language: node_js
+  - "0.11"
+  - "0.10"
+services:
+    - mongodb
+
+branches:
+  only:
+    - develop
+    - master
