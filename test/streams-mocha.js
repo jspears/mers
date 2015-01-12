@@ -3,7 +3,7 @@ var stream = require('stream'),
     streams = require('../lib/streams'),
     through = require('../lib/streams/through'),
     TransformerFactory = require('../lib/transformer-factory'),
-    w = require('../lib/when'),
+    w = require('nojector/lib/when'),
     __ = require('underscore');
 
 describe('streams', function () {
