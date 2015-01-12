@@ -100,9 +100,11 @@ Sorting is supported 1 ascending -1 ascending.
 ###Transformer
 Transformers can be registered on startup.  A simple TransformerFactory is
 included.  If the function returns a promise, it will resolve the transformer
-asynchrounously.   The transformers follow the same injection rules.
+asynchronously.   The transformers follow the same injection rules.
 
-
+To transform asynchronously just return a promise from your function.  You can
+chain transformers.  Transformers can also inject, but the first argument should
+be the object you want to transform.
 
 
 ```javascript
@@ -110,19 +112,49 @@ asynchrounously.   The transformers follow the same injection rules.
 app.use('/rest', require('mers').rest({
     mongoose:mongoose,
     transformers:{
-           renameid:function(Model, label){
-            //do some setup but return function.
-              return function(obj){
+           renameid: function(obj){
                 obj.id = obj._id;
                 delete obj._id;
                 //don't forget to return the object.  Null will filter it from the results.
                 return obj;
+           },
+           /**
+            Injects the user into the function, and checks if the
+            owner is the same as the current user.  Works with passport.
+           */
+           checkUser:function(obj, session$user){
+              if (obj.owner_id !== session$user._id){
+                //returning null, short circuits the other transformers. And will
+                //not be included in the response.
+                return null;
+              }else{
+               return obj;
               }
+
+           },
+           /**
+             Uses injection and async resolution.
+           */
+           async:function(obj, query$doIt){
+             if (query$doIt){
+                var p = promise();
+                setTimeout(function(){
+                    obj.doneIt =true;
+                    //Mpromise resolve.  Should work with other promises, or any object with a then function.
+                    p.resolve(null, obj);
+                },50);
+                return p;
+             }else{
+             return objl
+             }
+
            }
       }
     }));
 }
 ```
+
+
 
 to get results transformered just add
 
