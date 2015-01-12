@@ -29,8 +29,8 @@ module.exports = function (m) {
      * @param q
      * @param term
      */
-    BlogPostSchema.statics.findTitleLike = function findTitleLike(query$title, params$) {
-        var search = query$title || params$.shift();
+    BlogPostSchema.statics.findTitleLike = function findTitleLike(q, term) {
+        var search = term && term.length ? term.shift() : q && q.title;
         if (!search)
             return this.find({_id: null});
 
@@ -62,7 +62,7 @@ module.exports = function (m) {
         });
     }
     BlogPostSchema.statics.findByCallback = function onFindByCallback(query$id) {
-        return this.find({_id:query$id}).exec();
+        return this.find({_id: query$id}).exec();
     }
     /**
      * This is just an example, if this proves useful, may make it part of mers.
