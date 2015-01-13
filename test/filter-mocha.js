@@ -66,6 +66,7 @@ function insert(done) {
 }
 describe('filtering conditions', function () {
     before(function onBefore(done) {
+        this.timeout(5000);
         console.log('filter-mocha');
         connection = mongoose.createConnection();
         setup(connection);
