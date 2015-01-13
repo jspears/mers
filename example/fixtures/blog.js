@@ -1,4 +1,4 @@
-var _id = require('mongodb').BSONNative.ObjectID;
+var _id = require('mongoose').Types.ObjectId;
 var c1 = {
         title: 'Not Bad',
         _id: _id()

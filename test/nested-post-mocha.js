@@ -10,9 +10,9 @@ var mmongoose = require('mongoose'),
     Schema = mongoose.Schema,
     json = JSON.stringify,
     compat = require('../lib/compat'),
-    app = express(),
+
     Promise = require('mongoose/node_modules/mpromise'),
-    promise = function(){
+    promise = function () {
         return new Promise();
     };
 
@@ -21,14 +21,17 @@ var EmployeeSchema = new Schema({
         type: String,
         required: true,
         trim: true
-    }});
+    }
+});
 var GroupSchema = new Schema();
 
 GroupSchema.add({
-    name:String,
-    employees:[{type: Schema.Types.ObjectId, ref:'Employee'}],
-    owner:{type: Schema.Types.ObjectId, ref:'Employee'},
-    groups:[GroupSchema]
+    name: String,
+    employees: [
+        {type: Schema.Types.ObjectId, ref: 'Employee'}
+    ],
+    owner: {type: Schema.Types.ObjectId, ref: 'Employee'},
+    groups: [GroupSchema]
 })
 
 var DepartmentSchema = new Schema({
@@ -42,18 +45,30 @@ var DepartmentSchema = new Schema({
     },
     employees: [EmployeeSchema]
 });
-DepartmentSchema.methods.hello = function DepartmentSchema$hello(){
-    return {name:'hello '+this.name};
+DepartmentSchema.methods.hello = function DepartmentSchema$hello() {
+    return {name: 'hello ' + this.name};
 }
-DepartmentSchema.methods.promises = function DepartmentSchema$hello(data){
+DepartmentSchema.methods.promises = function DepartmentSchema$hello(data) {
     var p = promise();
-    setTimeout(p.resolve.bind(p, null, {name:'hello '+this.name}), 100);
+    setTimeout(p.resolve.bind(p, null, {name: 'hello ' + this.name}), 100);
     return p;
 }
-DepartmentSchema.methods.superDo = function DepartmentSchema$hello(data){
-   return Department.find({
-       _id:this._id
-   });
+DepartmentSchema.methods.superDo = function DepartmentSchema$hello(data) {
+    return Department.find({
+        _id: this._id
+    });
+}
+
+DepartmentSchema.methods.echoName = function DepartmentSchema$echoName(query$name) {
+    return this.name + ' ' + query$name;
+}
+DepartmentSchema.methods.nestedInject = function DepartmentSchema$echoName(query$name) {
+    var name = this.name;
+    return {
+        name: function (body$nested) {
+            return name + ' ' + query$name + ' ' + body$nested;
+        }
+    }
 }
 
 DepartmentSchema.methods.doStuff = function DepartmentSchema$doStuff(query$name){
@@ -62,36 +77,51 @@ DepartmentSchema.methods.doStuff = function DepartmentSchema$doStuff(query$name)
 
 var mongoose = mmongoose.createConnection();
 var Employee = mongoose.model('Employee', EmployeeSchema), Department = mongoose.model('Department', DepartmentSchema), Group = mongoose.model('Group', GroupSchema), d1;
-
-app.use(compat.bodyParser());
-app.use('/rest', rest({ mongoose: mongoose }).rest())
+function makeApp() {
+    app = express();
+    app.use(compat.bodyParser());
+    app.use('/rest', rest({mongoose: mongoose}).rest())
+}
 var connected = false, _id = mongoose.base.Types.ObjectId();
 function insert(done) {
-    new Department({_id:_id, name: 'HR', employees: [new Employee({firstname: 'John'}), new Employee({firstname: 'Bob'})]}).save(function (e, o) {
+    new Department({
+        _id: _id,
+        name: 'HR',
+        employees: [new Employee({firstname: 'John'}), new Employee({firstname: 'Bob'})]
+    }).save(function (e, o) {
         d1 = o;
 
         done();
     });
 }
 
-before(function NestedPostTest$onBefore(done) {
-    console.log('nested-post onBefore');
-    mongoose.on('connected', function(){
-        mongoose.db.dropDatabase(function(){
-            insert(done);
-        })
-    });
-    mongoose.open('mongodb://localhost/nested_post_test')
-});
-
 describe('testing nested', function () {
+
+    before(function NestedPostTest$onBefore(done) {
+        makeApp();
+
+        console.log('nested-post onBefore');
+        mongoose.on('connected', function () {
+            mongoose.db.dropDatabase(function () {
+                insert(done);
+            })
+        });
+        mongoose.open('mongodb://localhost/nested_post_test')
+    });
+
+    after(function NestedPostTest$onAfter(done) {
+        mongoose.on('disconnected', function () {
+            done();
+        })
+        mongoose.close();
+
+    });
     it('should post', function (done) {
         console.log('finding ' + d1._id);
         request(app)
             .post('/rest/Department/' + d1._id + '/employees')
             .set('Content-Type', 'application/json')
             .send(json({"firstname": "Richard"})).expect(200).end(function (err, res) {
-                console.log('response', err, res);
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;
                 payload.should.have.property('firstname', 'Richard');
@@ -99,12 +129,11 @@ describe('testing nested', function () {
                 done();
             })
     })
-    it ('should invoke a method', function(done){
+    it('should invoke a method', function (done) {
         request(app)
             .get('/rest/Department/' + _id + '/hello')
             .set('Content-Type', 'application/json')
             .send(json({"firstname": "Richard"})).expect(200).end(function (err, res) {
-                console.log('response', err, res);
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;
                 payload[0].should.have.property('name', 'hello HR');
@@ -112,12 +141,12 @@ describe('testing nested', function () {
                 done();
             })
     })
-    it('should invoke a method that returns a promise', function(done){
+    it('should invoke a method that returns a promise', function (done) {
+        this.timeout(5000);
         request(app)
             .get('/rest/Department/' + _id + '/promises')
             .set('Content-Type', 'application/json')
             .send(json({"firstname": "Richard"})).expect(200).end(function (err, res) {
-                console.log('response', err, res);
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;
                 payload[0].should.have.property('name', 'hello HR');
@@ -125,12 +154,11 @@ describe('testing nested', function () {
                 done();
             })
     });
-    it('should invoke a method that returns an exec', function(done){
+    it('should invoke a method that returns an exec', function (done) {
         request(app)
             .get('/rest/Department/' + _id + '/superDo')
             .set('Content-Type', 'application/json')
             .send(json({"firstname": "Richard"})).expect(200).end(function (err, res) {
-                console.log('response', err, res);
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;
                 payload[0].should.have.property('name', 'HR');
@@ -138,26 +166,53 @@ describe('testing nested', function () {
                 done();
             })
     });
-    it('should post nested objects', function(done){
+    it('should post nested objects', function (done) {
         request(app).post('/rest/Group').set('Content-Type', 'application/json')
-            .send(json({'name':'test', employees:[{firstname:'John'}, {firstname:'Suzy'}]}))
-            .end(function(err, res){
-              console.log(res);
-               done();
+            .send(json({
+                'name': 'test', employees: [
+                    {firstname: 'John'},
+                    {firstname: 'Suzy'}
+                ]
+            }))
+            .end(function (err, res) {
+                done();
             });
     });
-    it('should error well', function(done){
-        request(app).get('/rest/Department/'+d1._id).expect(200).end(function(err,res){
-           request(app).post('/rest/Department')
-               .set('Content-Type', 'application/json')
-               .send(json(res.body.payload))
-               .expect(200)
-               .end(function(err,resp){
-                   resp.body.should.have.property('error');
-                   resp.body.should.not.have.property('payload');
-                   resp.body.should.have.property('status', 1);
-                   done();
-               });
+    it('should get nested objects with method', function (done) {
+        request(app).get('/rest/department/' + _id + '/echoName?name=hi').set('Content-Type', 'application/json')
+            .end(function (err, res) {
+                res.body.should.have.property('payload');
+                res.body.should.have.property('status', 0);
+                res.body.payload[0].should.be.equal('HR hi');
+                done();
+            });
+    });
+    it('should post nested objects with method nested', function (done) {
+        request(app).get('/rest/department/' + _id + '/nestedInject/name?name=hi')
+            .send(json({nested: 'test'}))
+            .set('Content-Type', 'application/json')
+            .end(function (err, res) {
+                // res.body.should.not.have.property('error');
+                res.body.should.have.property('payload');
+                res.body.should.have.property('status', 0);
+                //odd numberered depths are not arrays.
+                var r = res.body.payload+''
+                r.should.be.equal('HR hi test');
+                done();
+            });
+    });
+    it('should error well', function (done) {
+        request(app).get('/rest/Department/' + d1._id).expect(200).end(function (err, res) {
+            request(app).post('/rest/Department')
+                .set('Content-Type', 'application/json')
+                .send(json(res.body.payload))
+                .expect(200)
+                .end(function (err, res) {
+                    res.body.should.have.property('error');
+                    res.body.should.not.have.property('payload');
+                    res.body.should.have.property('status', 1);
+                    done();
+                });
         });
     })
     it('should invoke a method that returns an exec and pass parameters', function(done){

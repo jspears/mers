@@ -2,185 +2,185 @@ process.env.NODE_ENV = 'test';
 require('should');
 var app, request = require('./support/http'), mongoose = require('mongoose'), _u = require('underscore'), assert = require('assert'), json = JSON.stringify;
 var d = 0;
-var connection = mongoose.createConnection();
-before(function onBefore(done) {
-    console.log('before routes-mocha');
-    connection.on('connected', function () {
-
-        console.log('connected routes-mocha');
-        app = require('../example/server.js')(connection);
 
 
-        done();
-    });
-    connection.open('mongodb://localhost/routes_mocha');
-});
-beforeEach(function (done) {
-    connection.db.dropDatabase(function () {
-        console.log('dropped routes-mocha');
-        done();
-    });
-});
+describe('routes /rest/blogpost', function () {
 
-describe('routes', function () {
-    function setup(done) {
-        console.log('setup called');
-        done();
-    }
+    var connection = mongoose.createConnection();
+    before(function onBefore(done) {
+        console.log('before routes-mocha');
+        connection.on('connected', function () {
 
-    describe('GET /rest/blogpost', function () {
-        it('should return empty list', function (done) {
-            request(app).get('/rest/blogpost')
-                .expect('Content-Type', /json/)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err)
-                        console.log('ERROR', arguments);
-
-
-                    res.should.have.property('body');
-                    res.body.should.have.property('payload').with.lengthOf(0);
-                    res.body.should.have.property('total', 0);
-
-                    done();
-                });
+            console.log('connected routes-mocha');
+            app = require('../example/server.js')(connection);
+            done();
         });
+        connection.open('mongodb://localhost/routes_mocha');
+    });
+
+    beforeEach(function (done) {
+        connection.db.dropDatabase(function () {
+            done();
+        });
+    });
+    after(function onAfter(done) {
+
+        connection.on('disconnected', function () {
+            console.log('disconnected');
+            done();
+        });
+        connection.close();
+    });
+
+
+    it('GET should return empty list', function (done) {
+        request(app).get('/rest/blogpost')
+            .expect(200)
+            .end(function (err, res) {
+                if (err)
+                    console.log('ERROR', arguments);
+
+
+//                    res.should.have.property('body');
+                res.body.should.have.property('payload').with.lengthOf(0);
+                res.body.should.have.property('total', 0);
+
+                done();
+            });
+    });
+
+    var id;
+    it('POST should create a new blogpost and return it', function (done) {
+        request(app)
+            .post('/rest/blogpost')
+            .set('Content-Type', 'application/json')
+            .send(json({
+                title: 'Test Blog 1',
+                body: 'Some blogged goodness',
+                date: new Date()
+            })).expect(200).end(function (err, res) {
+                if (err)
+                    console.log('ERROR', arguments);
+
+                res.should.have.property('body');
+                res.body.should.have.property('payload');
+                res.body.payload.should.have.property('title', 'Test Blog 1');
+                res.body.payload.should.have.property('body', 'Some blogged goodness');
+                id = res.body.payload._id;
+                done();
+
+            });
 
     });
-    var id;
-    describe('POST /rest/blogpost', function () {
-        it('should create a new blogpost and return it', function (done) {
+
+    it('should add 2 comments to the blog post', function (done) {
+        createPost(function (post) {
             request(app)
-                .post('/rest/blogpost')
+                .put('/rest/blogpost/' + post._id)
                 .set('Content-Type', 'application/json')
                 .send(json({
-                    title: 'Test Blog 1',
-                    body: 'Some blogged goodness',
-                    date: new Date()
-                })).expect(200).end(function (err, res) {
+                    comments: [
+                        {title: 'Very Cool Thing You Have', body: 'Do you like my body?'},
+                        {title: 'I dunno I\'m bored', body: 'if you think i\'m sexy'}
+                    ]
+                })).end(function (err, res) {
                     if (err)
                         console.log('ERROR', arguments);
-
+                    res.should.have.property('statusCode', 200);
                     res.should.have.property('body');
                     res.body.should.have.property('payload');
-                    res.body.payload.should.have.property('title', 'Test Blog 1');
-                    res.body.payload.should.have.property('body', 'Some blogged goodness');
-                    id = res.body.payload._id;
+                    res.body.payload.should.have.property('comments');
+                    res.body.payload.comments.should.have.lengthOf(2);
+                    res.body.payload.comments[1].should.have.property('title', 'I dunno I\'m bored');
                     done();
 
                 });
-
-        });
+        })
     });
-
-    describe('testing  /rest/blogpost', function () {
-        it('should add 2 comments to the blog post', function (done) {
-            createPost(function (post) {
-                request(app)
-                    .put('/rest/blogpost/' + post._id)
-                    .set('Content-Type', 'application/json')
-                    .send(json({
-                        comments: [
-                            {title: 'Very Cool Thing You Have', body: 'Do you like my body?'},
-                            {title: 'I dunno I\'m bored', body: 'if you think i\'m sexy'}
-                        ]
-                    })).end(function (err, res) {
-                        if (err)
-                            console.log('ERROR', arguments);
-                        res.should.have.property('statusCode', 200);
-                        res.should.have.property('body');
-                        res.body.should.have.property('payload');
-                        res.body.payload.should.have.property('comments');
-                        res.body.payload.comments.should.have.lengthOf(2);
-                        res.body.payload.comments[1].should.have.property('title', 'I dunno I\'m bored');
-                        done();
-
-                    });
-            })
-        });
-        it('put comments[1] to the blogpost', function (done) {
-            createPost({ title: 'put', body: 'stuff', comments: [
+    it('PUT comments[1] to the blogpost', function (done) {
+        createPost({
+            title: 'put', body: 'stuff', comments: [
                 {title: '123'},
                 {title: '345'},
                 {title: '456'}
-            ] }, function (post) {
-                request(app)
-                    .put('/rest/blogpost/' + post._id + '/comments/1')
-                    .set('Content-Type', 'application/json')
-                    .send(json(
-                        {title: 'Yup', body: 'Do you like my body?'}
-                    )).end(function (err, res) {
-                        if (err)
-                            console.log('ERROR', err.message, err.stack);
-
-                        res.should.have.property('statusCode', 200);
-                        res.should.have.property('body');
-                        res.body.should.have.property('payload');
-                        res.body.payload.should.have.property('title', 'Yup');
-                        res.body.payload.should.have.property('_id');
-                        done();
-
-                    });
-            });
-
-        });
-        it('post comments to the blogpost', function (done) {
-            createPost(function (post) {
-                request(app)
-                    .post('/rest/blogpost/' + post._id + '/comments/')
-                    .set('Content-Type', 'application/json')
-                    .send(json(
-                        {title: 'YupYup', body: 'Do you like my body?'}
-                    )).end(function (err, res) {
-                        if (err)
-                            console.log('ERROR', err.message, err.stack);
-
-                        res.should.have.property('statusCode', 200);
-                        res.should.have.property('body');
-                        res.body.should.have.property('payload');
-                        //            res.body.payload.should.have.lengthOf(3);
-                        res.body.payload.should.have.property('title', 'YupYup');
-
-                        done();
-
-                    });
-            });
-
-        });
-        it('should not crash on invalid PUT', function (done) {
-            createPost(function (post) {
-                request(app)
-                    .put('/rest/blogpost/' + post._id)
-                    .set('Content-Type', 'application/json')
-                    .send(json(
-                        {title: 'No'}
-                    )).end(function (err, res) {
-                        res.should.have.property('statusCode', 200)
-                        res.body.should.have.property('status', 1);
-                        res.body.error.should.have.property('message', 'Validation failed');
-                        done();
-                    });
-            });
-        });
-        it('should be accessible from an url', function (done) {
-            createPost({ title: 'Yup',
-                body: 'Do you like my body?',
-                comments: [
-                    {body: 'Do you like my body?'}
-                ]
-            }, function (post) {
-                request(app).get('/rest/blogpost/' + post._id + '/comments/' + post.comments[0]._id).end(function (err, res) {
+            ]
+        }, function (post) {
+            request(app)
+                .put('/rest/blogpost/' + post._id + '/comments/1')
+                .set('Content-Type', 'application/json')
+                .send(json(
+                    {title: 'Yup', body: 'Do you like my body?'}
+                )).end(function (err, res) {
+                    if (err)
+                        console.log('ERROR', err.message, err.stack);
 
                     res.should.have.property('statusCode', 200);
                     res.should.have.property('body');
                     res.body.should.have.property('payload');
-                    res.body.payload.should.have.property("body", 'Do you like my body?');
+                    res.body.payload.should.have.property('title', 'Yup');
+                    res.body.payload.should.have.property('_id');
+                    done();
+
+                });
+        });
+
+    });
+    it('POST comments to the blogpost', function (done) {
+        createPost(function (post) {
+            request(app)
+                .post('/rest/blogpost/' + post._id + '/comments/')
+                .set('Content-Type', 'application/json')
+                .send(json(
+                    {title: 'YupYup', body: 'Do you like my body?'}
+                )).end(function (err, res) {
+                    if (err)
+                        console.log('ERROR', err.message, err.stack);
+
+                    res.should.have.property('statusCode', 200);
+                    res.should.have.property('body');
+                    res.body.should.have.property('payload');
+                    //            res.body.payload.should.have.lengthOf(3);
+                    res.body.payload.should.have.property('title', 'YupYup');
+
+                    done();
+
+                });
+        });
+
+    });
+    it('PUT should not crash on invalid content', function (done) {
+        createPost(function (post) {
+            request(app)
+                .put('/rest/blogpost/' + post._id)
+                .set('Content-Type', 'application/json')
+                .send(json(
+                    {title: 'No'}
+                )).end(function (err, res) {
+                    res.should.have.property('statusCode', 200)
+                    res.body.should.have.property('status', 1);
+                    res.body.should.have.property('error', 'Validation failed');
                     done();
                 });
-            });
         });
     });
-    describe('DELETE /rest/blogpost/$id', function () {
+    it('should be accessible from an url', function (done) {
+        createPost({
+            title: 'Yup',
+            body: 'Do you like my body?',
+            comments: [
+                {body: 'Do you like my body?'}
+            ]
+        }, function (post) {
+            request(app).get('/rest/blogpost/' + post._id + '/comments/' + post.comments[0]._id).end(function (err, res) {
+
+                res.should.have.property('statusCode', 200);
+                res.should.have.property('body');
+                res.body.should.have.property('payload');
+                res.body.payload.should.have.property("body", 'Do you like my body?');
+                done();
+            });
+        });
+
         it('should delete the created blog posting', function (done) {
             createPost(function (post) {
                 request(app).del('/rest/blogpost/' + post._id).end(function (err, res) {
@@ -207,7 +207,7 @@ describe('routes', function () {
 
 
     describe('should handle errors without crashing when calling an invalid id', function () {
-        it('should not crash invalid id', function (done) {
+        it('GET should not crash invalid id', function (done) {
             request(app).get('/rest/blogpost/junk').end(function (err, res) {
                 res.should.have.property('statusCode', 200);
                 res.body.should.have.property('status', 1);
@@ -215,7 +215,7 @@ describe('routes', function () {
                 done();
             });
         });
-        it('should not crash no id', function (done) {
+        it('GET should not crash no id', function (done) {
             request(app).get('/rest/blogpost/').end(function (err, res) {
                 res.should.have.property('statusCode', 200);
 
@@ -224,21 +224,8 @@ describe('routes', function () {
         });
     });
 
-    describe('make a raw mongodb call', function () {
-        it('should not crash', function (done) {
-            request(app).get('/rest/blogpost/finder/findRaw').end(function (err, res) {
-                if (err)
-                    console.log('err', err, res);
-                res.should.have.property('statusCode', 200);
-                res.body.should.have.property('status', 0);
-
-                done();
-            });
-        });
-    });
-
     describe('update a nested array', function () {
-        it('put should update a nested array', function (done) {
+        it('PUT should update a nested array', function (done) {
             createPost({
                 title: 'Post F',
                 body: 'Should be deep',
@@ -266,7 +253,7 @@ describe('routes', function () {
                         }
                     ]
                     },
-                    { title: 'comment 2', body: 'comment2'}
+                    {title: 'comment 2', body: 'comment2'}
                 ]
 
             }, function (post) {
@@ -284,7 +271,7 @@ describe('routes', function () {
                     });
             });
         });
-        it('post should insert a nested array', function (done) {
+        it('POST should insert a nested array', function (done) {
             createPost({
                 title: 'Post F',
                 body: 'Should be deep',
@@ -312,7 +299,7 @@ describe('routes', function () {
                         }
                     ]
                     },
-                    { title: 'comment 2', body: 'comment2'}
+                    {title: 'comment 2', body: 'comment2'}
                 ]
 
             }, function (post) {
@@ -330,7 +317,7 @@ describe('routes', function () {
                     });
             });
         });
-        it('post should find a nested array byid', function (done) {
+        it('POST should find a nested array byid', function (done) {
             createPost({
                 title: 'Post F',
                 body: 'Should be deep',
@@ -358,7 +345,7 @@ describe('routes', function () {
                         }
                     ]
                     },
-                    { title: 'comment 2', body: 'comment2'}
+                    {title: 'comment 2', body: 'comment2'}
                 ]
 
             }, function (post) {
@@ -367,30 +354,26 @@ describe('routes', function () {
                     .end(function (err, res) {
                         var payload = res.body.should.have.property('payload').obj;
                         payload.should.have.property('_id', p._id);
-                        request(app).get()
                         done();
-
-
                     });
             });
         });
     });
-    describe('it should allow for callback returned from finders', function () {
 
-        it('should return', function (done) {
-            createPost(function afterCreatePost(post) {
-                request(app).get('/rest/blogpost/finder/findByCallback?id=' + post._id).set('Content-Type', 'application/json').end(function onEndFind(err, res) {
-                    if (err) return done();
-                    var payload = res.body.should.have.property('payload').obj;
-                    payload[0].should.have.property('_id', post._id);
-                    done();
-                });
-            })
+    it(' should allow for callback returned from finders and return the post', function (done) {
+        createPost(function afterCreatePost(post) {
+            request(app).get('/rest/blogpost/finder/findByCallback?id=' + post._id).set('Content-Type', 'application/json').end(function onEndFind(err, res) {
+                if (err) return done();
+                var payload = res.body.should.have.property('payload').obj;
+                payload[0].should.have.property('_id', post._id);
+                done();
+            });
         })
     });
-    it('should allow for transformers on post', function (done) {
 
-        setupPost(null, '/rest/blogpost_t').end(function(e,res){
+    it('POST should allow for transformers ', function (done) {
+
+        setupPost(null, '/rest/blogpost_t').end(function (e, res) {
             var body = res.body;
             body.should.have.property('payload');
             body.payload.should.have.property('label', 'stuff');
@@ -425,14 +408,14 @@ var t = 0;
 
 function setupPost(opts, url) {
     if (!opts) {
-        opts = { title: 'Test ' + (t), body: 'default body for ' + t};
+        opts = {title: 'Test ' + (t), body: 'default body for ' + t};
         t++;
     }
 
     return request(app)
         .post(url || '/rest/blogpost')
         .set('Content-Type', 'application/json')
-        .send(json(_u.extend({ date: new Date() }, opts)));
+        .send(json(_u.extend({date: new Date()}, opts)));
 }
 function createPost(opts, cb) {
     if (!cb) {
