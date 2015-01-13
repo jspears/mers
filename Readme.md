@@ -19,7 +19,7 @@ Configuration options include:
 * `[error][error]:function` (your custom error handler)
 * `responseStream:function` (your custom respost stream. See: lib/streams.js)
 * `transformer:function` (your custom transformer factory)
-
+# `inject:{Nojector}` (custom nojector add resovlers, or whatever)
 
 ###If you had a schema such as
    ```javascript
@@ -42,7 +42,7 @@ var BlogPostSchema = new Schema({
  * @param term
  */
 BlogPostSchema.statics.findTitleLike = function findTitleLike(q, term) {
-    return this.find({'title':new RegExp(q.title || term, 'i')});
+    return this.find({'title':new RegExp(q.title || term.shift() || '', 'i')});
 }
 var Comment = module.exports.Comment = mongoose.model('Comment', CommentSchema);
 var BlogPost = module.exports.BlogPost = mongoose.model('BlogPost', BlogPostSchema);
@@ -145,7 +145,7 @@ app.use('/rest', require('mers').rest({
                 },50);
                 return p;
              }else{
-             return objl
+             return obj;
              }
 
            }
@@ -177,7 +177,7 @@ They are passed the query object and the rest of the url. All of the populate's,
  * @param term
  */
 BlogPostSchema.statics.findTitleLike = function findTitleLike(q, term) {
-    return this.find({'title':new RegExp(q.title || term, 'i')});
+    return this.find({'title':new RegExp(q.title || term.shift(), 'i')});
 }
 ```
 
@@ -194,17 +194,14 @@ or
 http://localhost:3000/rest/blogpost/finder/findTitleLike/term
 ```
 
-#### Callbacks with finders
+#### Promises with finders
 Occassionally you may want to do something like a double query within a finder.   Mers has got your back.
 
 ```javascript
-   BlogPostSchema.statics.findByCallback = function onFindByCallback(q) {
-        var self = this, id = q.id;
-        //Note pass the callback into exec, this is a typical mongoose function(err, success);
-        return function onFindByCallback$Callback(cb) {
-            self.findById(id).exec(cb);
-        }
-    }
+      BlogPostSchema.statics.findByCallback = function onFindByCallback(query$id) {
+          return this.find({_id: query$id}).exec();
+      }
+
 
 ```
 
@@ -224,37 +221,6 @@ To create a custom error handler
 
 ```
 
-### Custom Transformers
-You can transform your results by adding a custom transformer and or adding a new TransformerFactory
-
-```javascript
-
-   app.use('/rest, rest({
-         transformers :{
-          cooltranform:function(Model, label){
-             return function(obj){
-                    obj.id = obj._id;
-                    delete obj._id;
-                    return obj; //returning null removes it from the output
-             }
-          } }).rest());
-
-```
-
-### Selecting
-Selecting support is upcoming, but for now you can do it in finders
-
-```javascript
- var User = new Schema({
-   username:String,
-   birthdate:Date
- });
- User.statics.selectJustIdAndUsername  = function(){
-  this.find({}).select('_id username');
- }
-
-```
-
 
 ### Custom ResultStream
 You can create your own result stream. It needs to subclass Stream and be writable.  This can allow
@@ -267,7 +233,7 @@ that can't just be filtered.   Of course you can return nested nestings too...
 
 
 ###Returning an Object
-This one just returns an object, from /department/<id>/hello
+This one just returns an object, from /department/<id>/hello/name
 
 ```javascript
 DepartmentSchema.methods.hello = function DepartmentSchema$hello(){
@@ -306,9 +272,10 @@ An example of a customized rest service can be found at
 
 ##Parameter injection
 When invoking a method you often need data from the request to process.  To do this
-we have an injection system.   
+we have an injection system.   You can inject a method on a model, or a transformer.
 
-It resolves the prefix of the parameter name deliminated by $ to the scope.  The built in resolvers are
+It resolves the prefix of the parameter name deliminated by $ to the scope.  See
+ nojector for more information there. The built in resolvers are
 session,
 param,
 query,
