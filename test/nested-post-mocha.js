@@ -71,6 +71,10 @@ DepartmentSchema.methods.nestedInject = function DepartmentSchema$echoName(query
     }
 }
 
+DepartmentSchema.methods.doStuff = function DepartmentSchema$doStuff(query$name){
+    return {name:'hello '+this.name+query$name};
+}
+
 var mongoose = mmongoose.createConnection();
 var Employee = mongoose.model('Employee', EmployeeSchema), Department = mongoose.model('Department', DepartmentSchema), Group = mongoose.model('Group', GroupSchema), d1;
 function makeApp() {
@@ -211,4 +215,17 @@ describe('testing nested', function () {
                 });
         });
     })
+    it('should invoke a method that returns an exec and pass parameters', function(done){
+        request(app)
+            .get('/rest/Department/' + _id + '/doStuff?name=bob')
+            .set('Content-Type', 'application/json')
+            .send(json({"firstname": "Richard"})).expect(200).end(function (err, res) {
+                console.log('response', err, res);
+                res.body.should.have.property('status', 0);
+                var payload = res.body.should.have.property('payload').obj;
+                payload[0].should.have.property('name', 'hello HRbob');
+
+                done();
+            })
+    });
 });
