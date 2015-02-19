@@ -211,7 +211,7 @@ To create a custom error handler
 
 ```javascript
 
-   app.use('/rest, rest({
+   app.use('/rest', rest({
          error : function(err, req, res, next){
                res.send({
                    status:1,
