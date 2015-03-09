@@ -117,7 +117,7 @@ describe('testing nested refs', function () {
                 done();
             })
     });
-    it.only('should post to employee with group ref', function (done) {
+    it('should post to employee with group ref', function (done) {
         console.log('e1', e1._id);
         request(app)
             .post('/rest/employee/'+e1._id+'/grp')
