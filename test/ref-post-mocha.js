@@ -67,8 +67,6 @@ describe('testing nested refs', function () {
 
     before(function NestedPostTest$onBefore(done) {
         makeApp();
-
-        console.log('nested-post onBefore');
         mongoose.on('connected', function () {
             mongoose.db.dropDatabase(function () {
                 insert(done);
@@ -118,7 +116,6 @@ describe('testing nested refs', function () {
             })
     });
     it('should post to employee with group ref', function (done) {
-        console.log('e1', e1._id);
         request(app)
             .post('/rest/employee/'+e1._id+'/grp')
             .set('Content-Type', 'application/json')

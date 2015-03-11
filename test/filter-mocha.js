@@ -36,7 +36,6 @@ var usernames = ['abc', 'def', 'acc', 'dff'];
 
 
 function insert(done) {
-    console.log('insert');
     var us = [].concat(usernames);
     var save = function (username) {
         var u = new User({
@@ -46,7 +45,6 @@ function insert(done) {
                 created: date(-10000 * score)
             }
         });
-        console.log('saving ', u.username);
         u.save(doneSave);
     };
 
@@ -55,7 +53,6 @@ function insert(done) {
             console.log('error', err);
         }
         if (us.length == 0) {
-            console.log('done');
             done();
         } else {
             save(us.shift());
@@ -67,7 +64,6 @@ function insert(done) {
 describe('filtering conditions', function () {
     before(function onBefore(done) {
         this.timeout(5000);
-        console.log('filter-mocha');
         connection = mongoose.createConnection();
         setup(connection);
         connection.on('connected', function () {
@@ -126,8 +122,7 @@ describe('filtering conditions', function () {
             .get("/rest/User?filter[meta][created]=<" + (date(-10000 * 3).toJSON()))
             .expect(200).end(function (err, res) {
                 if (err) {
-                    console.log('Error', res, err);
-                    done(err);
+                    return done(err);
                 }
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;

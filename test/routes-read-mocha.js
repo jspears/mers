@@ -48,7 +48,6 @@ describe('read only mers routes', function () {
     var connection;
     this.timeout(50000);
     before(function onBefore(done) {
-        console.log('before routes-mocha');
         var mongoose = connection = require('mongoose').createConnection();
         app = require('../example/server.js')(mongoose);
         mongoose.on('connected', function () {
@@ -84,7 +83,6 @@ describe('read only mers routes', function () {
 
     it('should allow for nested arrays of things', function (done) {
         request(app).get('/rest/blogpost/' + data[5]._id + '/comments/0/posts/1/posts/0').end(function (err, resp) {
-            console.log(resp.body);
             resp.body.should.have.property('payload');
             resp.body.payload.should.have.property('body', 'world3-3');
             done();
@@ -93,7 +91,6 @@ describe('read only mers routes', function () {
     it('make a raw mongodb call should not crash', function (done) {
         request(app).get('/rest/blogpost/finder/findRaw').end(function (err, res) {
             if (err) {
-                console.log('err', err, res);
                 return done(err);
             }
             res.should.have.property('statusCode', 200);
@@ -185,8 +182,9 @@ describe('read only mers routes', function () {
             });
             it('should be accessible from an url with an index and use a transform FUNCTION in the request', function (done) {
                 request(app).get('/space/test/').end(function (err, res) {
-                    if (err)
-                        console.log('ERROR', err, res.body);
+                    if (err){
+			return done(err);
+			}
                     //res.should.be.json
                     res.should.have.property('statusCode', 200);
                     res.should.have.property('body');

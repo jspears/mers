@@ -1,47 +1,100 @@
 process.env.NODE_ENV = 'test';
 require('should');
-var app, request = require('./support/http'), mongoose = require('mongoose'), _u = require('underscore'), assert = require('assert'), json = JSON.stringify;
+var app, request = require('./support/http'), mongoose = require('mongoose'), _u = require('underscore'), assert = require('assert'), json = JSON.stringify, connection;
 var d = 0;
+function doConnect(done) {
+    connection = mongoose.createConnection();
+    connection.on('connected', function () {
+        app = require('../example/server.js')(connection);
+        done();
+    });
+    connection.open('mongodb://localhost/routes_mocha');
+}
+function doDrop(done) {
+    connection.db.dropDatabase(function () {
+        done();
+    });
+
+}
+function doCloseConn(done) {
+
+    connection.on('disconnected', function () {
+        done();
+    });
+    connection.close();
+}
+describe('get operations', function () {
+    var p;
+    after(doCloseConn);
+    before(function (done) {
+        doConnect(function () {
+            doDrop(function () {
+                createPost({
+                    title: 'Post F',
+                    body: 'Should be deep',
+                    comments: [
+                        {
+                            title: 'hello', body: 'world', comment: 'im here', posts: [
+                            {
+                                title: 'hello2', body: 'world2', comment: 'im here',
+                                posts: [
+                                    {
+                                        title: 'hello2-3', body: 'world2-3', comment: 'im here'
+                                    }
+                                ]
+                            },
+                            {
+                                title: 'hello3', body: 'world3', comment: 'im here',
+                                posts: [
+                                    {
+                                        title: 'hello3-3', body: 'world3-3', comment: 'im here'
+                                    },
+                                    {
+                                        title: 'hello3-4', body: 'world3-4'
+                                    }
+                                ]
+                            }
+                        ]
+                        },
+                        {title: 'comment 2', body: 'comment2'}
+                    ]
+
+                }, function (post) {
+                    p = post;
+                    done();
+                });
+
+            });
+        });
+    });
+    it('should get nested gets ', function (done) {
+
+        request(app).get('/rest/blogpost/' + p._id + '/comments').end(function (err, res) {
+            if (err) done(err);
+            res.body.should.have.property('payload').with.lengthOf(2);
+            res.body.should.have.property('status', 0);
+            done();
+        });
+
+    })
 
 
+});
 describe('routes /rest/blogpost', function () {
 
-    var connection = mongoose.createConnection();
-    before(function onBefore(done) {
-        console.log('before routes-mocha');
-        connection.on('connected', function () {
 
-            console.log('connected routes-mocha');
-            app = require('../example/server.js')(connection);
-            done();
-        });
-        connection.open('mongodb://localhost/routes_mocha');
-    });
-
-    beforeEach(function (done) {
-        connection.db.dropDatabase(function () {
-            done();
-        });
-    });
-    after(function onAfter(done) {
-
-        connection.on('disconnected', function () {
-            console.log('disconnected');
-            done();
-        });
-        connection.close();
-    });
+    before(doConnect);
+    beforeEach(doDrop);
+    after(doCloseConn);
 
 
     it('GET should return empty list', function (done) {
         request(app).get('/rest/blogpost')
             .expect(200)
             .end(function (err, res) {
-                if (err)
-                    console.log('ERROR', arguments);
-
-
-//                    res.should.have.property('body');
+                if (err){
+                    return done(err);
+                }
                 res.body.should.have.property('payload').with.lengthOf(0);
                 res.body.should.have.property('total', 0);
 
@@ -59,8 +112,9 @@ describe('routes /rest/blogpost', function () {
                 body: 'Some blogged goodness',
                 date: new Date()
             })).expect(200).end(function (err, res) {
-                if (err)
-                    console.log('ERROR', arguments);
+                if (err){
+                    return done(err);
+                }
 
                 res.should.have.property('body');
                 res.body.should.have.property('payload');
@@ -84,8 +138,9 @@ describe('routes /rest/blogpost', function () {
                         {title: 'I dunno I\'m bored', body: 'if you think i\'m sexy'}
                     ]
                 })).end(function (err, res) {
-                    if (err)
-                        console.log('ERROR', arguments);
+                    if (err){
+                        return done(err);
+                    }
                     res.should.have.property('statusCode', 200);
                     res.should.have.property('body');
                     res.body.should.have.property('payload');
@@ -111,9 +166,9 @@ describe('routes /rest/blogpost', function () {
                 .send(json(
                     {title: 'Yup', body: 'Do you like my body?'}
                 )).end(function (err, res) {
-                    if (err)
-                        console.log('ERROR', err.message, err.stack);
-
+                    if (err){
+                        return done(err);
+                    }
                     res.should.have.property('statusCode', 200);
                     res.should.have.property('body');
                     res.body.should.have.property('payload');
@@ -133,9 +188,9 @@ describe('routes /rest/blogpost', function () {
                 .send(json(
                     {title: 'YupYup', body: 'Do you like my body?'}
                 )).end(function (err, res) {
-                    if (err)
-                        console.log('ERROR', err.message, err.stack);
-
+                    if (err){
+                        return done(err);
+                    }
                     res.should.have.property('statusCode', 200);
                     res.should.have.property('body');
                     res.body.should.have.property('payload');
@@ -163,6 +218,7 @@ describe('routes /rest/blogpost', function () {
                 });
         });
     });
+
     it('should be accessible from an url', function (done) {
         createPost({
             title: 'Yup',
@@ -393,9 +449,9 @@ describe('routes /rest/blogpost', function () {
                         {title: 'I dunno I\'m bored', body: 'if you think i\'m sexy'}
                     ]
                 })).end(function (err, res) {
-                    if (err)
-                        console.log('ERROR', arguments);
-
+                    if (err){
+                        return done(err);
+                    }
                     res.body.should.have.property('payload');
                     res.body.payload.should.have.property('label', 'stuff');
                     done();
