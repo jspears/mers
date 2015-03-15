@@ -100,7 +100,6 @@ describe('testing nested', function () {
     before(function NestedPostTest$onBefore(done) {
         makeApp();
 
-        console.log('nested-post onBefore');
         mongoose.on('connected', function () {
             mongoose.db.dropDatabase(function () {
                 insert(done);
@@ -117,7 +116,6 @@ describe('testing nested', function () {
 
     });
     it('should post', function (done) {
-        console.log('finding ' + d1._id);
         request(app)
             .post('/rest/Department/' + d1._id + '/employees')
             .set('Content-Type', 'application/json')
@@ -220,7 +218,6 @@ describe('testing nested', function () {
             .get('/rest/Department/' + _id + '/doStuff?name=bob')
             .set('Content-Type', 'application/json')
             .send(json({"firstname": "Richard"})).expect(200).end(function (err, res) {
-                console.log('response', err, res);
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;
                 payload[0].should.have.property('name', 'hello HRbob');

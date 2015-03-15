@@ -61,7 +61,6 @@ describe('streams', function () {
             data.qa = query$a;
             return data;
         }]).pipe(new streams.BufferedJSONStream).pipe(through.obj(function (chunk, enc, cb) {
-            console.log('chunk ' + JSON.stringify(chunk));
             chunk.should.have.property('total', 3);
             chunk.should.have.property('payload').have.property('length', 3);
             //  cb(null, chunk)
@@ -82,7 +81,6 @@ describe('streams', function () {
     it('should be able to stream from callback with error', function (done) {
         var d = require('domain').create();
         d.on('error', function (e) {
-            console.log('stuff');
             done();
         });
         d.add(ot);

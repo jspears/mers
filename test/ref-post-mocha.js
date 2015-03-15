@@ -1,13 +1,10 @@
-var mmongoose = require('mongoose'),
-    Schema = mmongoose.Schema,
-    OID = mmongoose.Types.ObjectId,
+var mongoose = require('mongoose'),
+    Schema = mongoose.Schema,
+    OID = mongoose.Schema.ObjectId,
     express = require('express'),
-
     rest = require('../index'),
     request = require('./support/http'),
-    mongoose = require('mongoose'),
     should = require('should'),
-    Schema = mongoose.Schema,
     json = JSON.stringify,
     compat = require('../lib/compat'),
 
@@ -15,16 +12,21 @@ var mmongoose = require('mongoose'),
     promise = function () {
         return new Promise();
     };
-OID.prototype.cast = function (v) {
+/**
+ * Note mongoose.Types.ObjectId you use to create an ObjectId.
+ * mongoose.Schema.ObjectId you use to update an id.
+ */
+/*OID.prototype.cast = function (v) {
     return v._id || v;
-}
+}*/
 var EmployeeSchema = new Schema({
     firstname: {
         type: String,
         required: true,
         trim: true
     },
-    age:Number
+    age: Number,
+    grp: {ref: 'Group', type: OID}
 });
 var GroupSchema = new Schema();
 
@@ -32,14 +34,12 @@ GroupSchema.add({
     name: String,
     employees: [
         {
-            type: OID, ref: 'Employee', caster: function (val) {
-            return val;
-        }
+            type: OID, ref: 'Employee'
         }
     ]
 })
 
-var mongoose = mmongoose.createConnection();
+var mongoose = mongoose.createConnection();
 var Employee = mongoose.model('Employee', EmployeeSchema), Group = mongoose.model('Group', GroupSchema), d1;
 function makeApp() {
     app = express();
@@ -51,7 +51,7 @@ function insert(done) {
     group = new Group({
         name: 'my group'
 
-    }), e1 = new Employee({firstname: 'Bobby', age:33});
+    }), e1 = new Employee({firstname: 'Bobby', age: 33});
     e1.save(function () {
         group.save(function () {
             group2 = new Group({name: 'group2', employees: e1._id});
@@ -67,8 +67,6 @@ describe('testing nested refs', function () {
 
     before(function NestedPostTest$onBefore(done) {
         makeApp();
-
-        console.log('nested-post onBefore');
         mongoose.on('connected', function () {
             mongoose.db.dropDatabase(function () {
                 insert(done);
@@ -84,7 +82,7 @@ describe('testing nested refs', function () {
         mongoose.close();
 
     });
-    it('should post', function (done) {
+    it('should post to group employee ref array', function (done) {
         console.log('finding ' + group._id);
         request(app)
             .post('/rest/Group/' + group._id + '/employees')
@@ -103,7 +101,7 @@ describe('testing nested refs', function () {
                 });
             })
     });
-    it('should put', function (done) {
+    it('should put to group with employee ref array', function (done) {
         request(app)
             .put('/rest/Group/' + group2._id + '/employees/0')
             .set('Content-Type', 'application/json')
@@ -116,6 +114,19 @@ describe('testing nested refs', function () {
 
                 done();
             })
-    })
+    });
+    it('should post to employee with group ref', function (done) {
+        request(app)
+            .post('/rest/employee/'+e1._id+'/grp')
+            .set('Content-Type', 'application/json')
+            .send(json({"name": "Ng4vr"})).expect(200).end(function (err, res) {
+                res.body.should.have.property('status', 0);
+                var opayload = res.body.should.have.property('payload').obj;
+                opayload.should.have.property('name', 'Ng4vr');
+
+
+                done();
+            })
+    });
 
 });

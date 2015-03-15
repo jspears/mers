@@ -36,7 +36,6 @@ var usernames = ['abc', 'def', 'acc', 'dff'];
 
 
 function insert(done) {
-    console.log('insert');
     var us = [].concat(usernames);
     var save = function (username) {
         var u = new User({
@@ -46,7 +45,6 @@ function insert(done) {
                 created: date(-10000 * score)
             }
         });
-        console.log('saving ', u.username);
         u.save(doneSave);
     };
 
@@ -55,7 +53,6 @@ function insert(done) {
             console.log('error', err);
         }
         if (us.length == 0) {
-            console.log('done');
             done();
         } else {
             save(us.shift());
@@ -64,28 +61,48 @@ function insert(done) {
     };
     save(us.shift());
 }
-describe('filtering conditions', function () {
-    before(function onBefore(done) {
+function closeConnection(done) {
+    connection.on('disconnected', function () {
+        done();
+    });
+    connection.close();
+}
+function openConnection(insert) {
+    insert = insert || function (d) {
+        d();
+    }
+    return function (done) {
+
         this.timeout(5000);
-        console.log('filter-mocha');
         connection = mongoose.createConnection();
         setup(connection);
         connection.on('connected', function () {
             connection.db.dropDatabase(function () {
-                insert(function () {
-                    done();
-                });
+                insert(done);
             });
         });
         connection.open('mongodb://localhost/filter-mocha');
-    });
+    }
+}
 
-    after(function onAfter(done) {
-        connection.on('disconnected', function () {
-            done();
-        });
-        connection.close();
+describe('empty db', function () {
+    before(openConnection());
+    after(closeConnection);
+    it('should be ok when empty', function (done) {
+        request(app)
+            .get('/rest/User')
+            .expect(200).end(function (err, res) {
+                var payload = res.body.should.have.property('payload').obj;
+                res.body.should.have.property('status', 0);
+                res.body.should.have.property('total', 0);
+                done();
+            });
     });
+});
+describe('filtering conditions', function () {
+
+    before(openConnection(insert));
+    after(closeConnection);
 
     it('should filter by username string', function (done) {
         request(app)
@@ -98,7 +115,7 @@ describe('filtering conditions', function () {
 
             })
     });
-    it('should fiter greater than number', function (done) {
+    it('should filter greater than number', function (done) {
         request(app)
             .get('/rest/User?filter[count]=>1')
             .expect(200).end(function (err, res) {
@@ -126,8 +143,7 @@ describe('filtering conditions', function () {
             .get("/rest/User?filter[meta][created]=<" + (date(-10000 * 3).toJSON()))
             .expect(200).end(function (err, res) {
                 if (err) {
-                    console.log('Error', res, err);
-                    done(err);
+                    return done(err);
                 }
                 res.body.should.have.property('status', 0);
                 var payload = res.body.should.have.property('payload').obj;

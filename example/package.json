@@ -1,12 +1,11 @@
 {
-    "name": "express-rest-example"
-  , "version": "0.0.1"
-  , "private": true
-  , "dependencies": {
-    "mongoose":"latest",
-    "mers":"latest",
-    "expressjs":"latest",
-    "body-parser":"latest",
-    "pow-mongoose-fixtures":"latest"
+  "name": "express-rest-example",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "body-parser": "latest",
+    "express": "latest",
+    "mers": "latest",
+    "mongoose": "^3.8.24"
   }
 }
