@@ -83,7 +83,6 @@ describe('testing nested refs', function () {
 
     });
     it('should post to group employee ref array', function (done) {
-        console.log('finding ' + group._id);
         request(app)
             .post('/rest/Group/' + group._id + '/employees')
             .set('Content-Type', 'application/json')
