@@ -13,7 +13,7 @@
     "mocha": "^2.1.0",
     "pow-mongoose-fixtures": "latest",
     "should": "^5.1.0",
-    "mongoose": "^3.8.21"
+    "mongoose": "^3.8.21",
     "supertest": "^0.15.0"
   },
   "peerDependencies": {
