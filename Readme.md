@@ -9,9 +9,36 @@
 
 
 ## Usage [usage]
+
+Install mers, mongoose, express and body-parser
+
+```sh
+  $ npm install express --save
+  $ npm install mongoose --save
+  $ npm install body-parser --save
+  $ npm install mers --save
+
+```
+
 ```javascript
+    //You really need body parser for things to work correctly
+     var express = require('express'),
+        mongoose = require('mongoose'),
+        Schema = mongoose.Schema,
+        bodyParser = require('body-parser')
+
+    app.use(bodyParser.json({ type: 'application/*+json' }))
+
+    var SampleSchema = new Schema({
+        name:String,
+        age:Number
+    });
+
+    mongoose.model('sample', SampleSchema);
+
     var mers = require('mers');
-    app.use('/rest', mers({uri:'mongodb://localhost/rest_example_prod'}).rest());
+    app.use('/rest', mers({uri:'mongodb://localhost/your_db'}).rest());
+
 ```
 Configuration options include:
 * `uri:uri://mongoose`  (as shown above)
@@ -32,7 +59,13 @@ var CommentSchema = new Schema({
 
 
 var BlogPostSchema = new Schema({
-    author:ObjectId, title:String, body:String, buf:Buffer, date:Date, comments:[CommentSchema], meta:{
+    author:ObjectId,
+    title:String,
+    body:String,
+    buf:Buffer,
+    date:Date,
+    comments:[CommentSchema],
+    meta:{
         votes:Number, favs:Number
     }
 });
