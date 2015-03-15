@@ -12,6 +12,7 @@
   "devDependencies": {
     "mocha": "^2.1.0",
     "pow-mongoose-fixtures": "latest",
+    "body-parser": "~1.10.0",
     "should": "^5.1.0",
     "express": "^4.10.7",
     "mongoose": "^3.8.21",
@@ -19,7 +20,7 @@
   },
   "peerDependencies": {
 
-    "body-parser": "~1.10.0",
+
     "mongoose": "^3.8.21"
 
   },
