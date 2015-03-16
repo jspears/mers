@@ -1,23 +1,31 @@
 process.env.NODE_ENV = 'test';
 require('should');
-var request = require('./support/http'), json = JSON.stringify, express = require('express'), mongoose = require('mongoose'),
+var request = require('./support/http'), json = JSON.stringify, express = require('express'),
+    mongoose = require('mongoose'),
+    Schema = mongoose.Schema,
     rest = require('../index.js'), compat = require('../lib/compat'), app;
 
-var UserSchema = new mongoose.Schema({
-    username: String
+var UserSchema = new Schema({
+    username: String,
+    groups: [{type: Schema.Types.ObjectId, ref: 'grouptest'}]
 });
 UserSchema.statics.current = function (session$user) {
     return this.findById(session$user);
 }
+var GroupSchema = new Schema({
+    name: String
+});
 
 describe('user like routes', function () {
     var connection;
     before(function onBefore(done) {
         connection = mongoose.createConnection();
-        var User = connection.model('usertest', UserSchema), u;
+        var User = connection.model('usertest', UserSchema),
+            Group = connection.model('grouptest', GroupSchema),
+            u;
         app = express();
         app.use(compat.bodyParser());
-        //fake session.
+        //fake login session.
         app.use(function (req, res, next) {
             var session = req.session || (req.session = {});
             session.user = u._id;
@@ -50,11 +58,27 @@ describe('user like routes', function () {
 
     });
     it('should return current', function (done) {
-        request(app).get('/rest/usertest/current?name=bob').end(function (err, resp) {
+        request(app).get('/rest/usertest/current').end(function (err, resp) {
             resp.body.should.have.property('payload');
             resp.body.payload.should.have.property('username', 'bob');
             done();
         })
+    });
+    it('should put current', function (done) {
+        request(app).put('/rest/usertest/current').set('Content-Type', 'application/json')
+            .send(json({"username": "Robert"})).end(function (err, resp) {
+            resp.body.should.have.property('payload');
+            resp.body.payload.should.have.property('username', 'Robert');
+            done();
+        })
+    });
+    it('should post current refs', function (done) {
+        request(app).post('/rest/usertest/current/groups').set('Content-Type', 'application/json')
+            .send(json({"name": "G1"})).end(function (err, resp) {
+                resp.body.should.have.property('payload');
+                resp.body.payload.should.have.property('name', 'G1');
+                done();
+            })
     });
 
 
