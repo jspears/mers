@@ -1,6 +1,6 @@
 {
   "name": "mers",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "private": false,
   "author": "Justin Spears <speajus@gmail.com>",
   "dependencies": {
@@ -19,10 +19,7 @@
     "supertest": "^0.15.0"
   },
   "peerDependencies": {
-
-
     "mongoose": "^3.8.21"
-
   },
   "scripts": {
     "test": "mocha test/*-mocha.js"
