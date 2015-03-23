@@ -1,5 +1,5 @@
 var mongoose = require('mongoose'), Promise = require('bluebird');
-
+module.exports = Setup;
 function Setup(opts) {
     opts = opts || {};
     this.name = opts.name;
