@@ -10,12 +10,13 @@
     "underscore": "^1.7.0"
   },
   "devDependencies": {
-    "mocha": "^2.1.0",
-    "pow-mongoose-fixtures": "latest",
+    "bluebird": "^2.9.14",
     "body-parser": "~1.10.0",
-    "should": "^5.1.0",
     "express": "^4.10.7",
+    "mocha": "^2.1.0",
     "mongoose": "^3.8.21",
+    "pow-mongoose-fixtures": "latest",
+    "should": "^5.1.0",
     "supertest": "^0.15.0"
   },
   "peerDependencies": {

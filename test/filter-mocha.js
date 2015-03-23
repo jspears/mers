@@ -14,6 +14,7 @@ var request = require('./support/http'),
             }
         }
     });
+var setup = new require('./support/setup')()
 
 function setup(connection) {
     var express = require('express'),
