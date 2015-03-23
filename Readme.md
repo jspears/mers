@@ -7,6 +7,7 @@
     Mers is a plugin for express to expose mongoose finders as simple crud/rest operations.  The
     basic idea being you should just define your model/finders and the rest should be be magic.
 
+![build status](https://travis-ci.org/jspears/mers.svg)
 
 ## Usage [usage]
 
