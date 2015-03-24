@@ -28,15 +28,14 @@ Install mers, mongoose, express and body-parser
         Schema = mongoose.Schema,
         bodyParser = require('body-parser')
 
-    app.use(bodyParser.json({ type: 'application/*+json' }))
-
+    app.use(bodyParser.json())
+    app.use(bodyParser.urlencoded({ extended: true }));
     var SampleSchema = new Schema({
         name:String,
         age:Number
     });
 
     mongoose.model('sample', SampleSchema);
-
     var mers = require('mers');
     app.use('/rest', mers({uri:'mongodb://localhost/your_db'}).rest());
 
