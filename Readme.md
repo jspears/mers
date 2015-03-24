@@ -9,7 +9,7 @@
 
 ![build status](https://travis-ci.org/jspears/mers.svg)
 
-## Usage [usage]
+## Usage
 
 Install mers, mongoose, express and body-parser
 
@@ -44,7 +44,7 @@ Install mers, mongoose, express and body-parser
 Configuration options include:
 * `uri:uri://mongoose`  (as shown above)
 * `mongoose:{mongoose}` (your mongoose instance)
-* `error:{function}` (your custom error handler)
+* `error:{function}` (your custom Error Handler)
 * `responseStream:{function}` (your custom respost stream. See: lib/streams.js)
 * `transformer:{function}` (your custom transformer factory)
 # `inject:{Nojector}` (custom nojector add resovlers, or whatever)
@@ -240,7 +240,7 @@ Occassionally you may want to do something like a double query within a finder. 
 ```
 
 
-### Error Handling
+### Error Handling ###
 To create a custom error handler
 
 ```javascript
