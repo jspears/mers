@@ -267,7 +267,7 @@ that can't just be filtered.   Of course you can return nested nestings too...
 
 
 ###Returning an Object
-This one just returns an object, from /department/<id>/hello/name
+This one just returns an object, from /department/$id/hello/name
 
 ```javascript
 DepartmentSchema.methods.hello = function DepartmentSchema$hello(){
@@ -276,7 +276,7 @@ DepartmentSchema.methods.hello = function DepartmentSchema$hello(){
 ```
 
 ###Returning a Promise.
-This is returns a promise from /department/<id>/promises.  Really you just
+This is returns a promise from /department/$id/promises.  Really you just
 need to return an object with an then function.  So any promise library should work.
 
 ```javascript
@@ -288,7 +288,7 @@ DepartmentSchema.methods.promises = function (data){
 ```
 
 ### Returning a Query object.
-This is returns a query from /department/<id>/superDo
+This is returns a query from /department/$id/superDo
 
 ```javascript
 DepartmentSchema.methods.superDo = function DepartmentSchema$hello(data){
@@ -333,7 +333,7 @@ DepartmentSchema.static.byName = function DepartmentSchema$hello(query$name){
 works on instances to...
 
 ```
-url: http://localhost/rest/department/<id>/hello/?name=STuff
+url: http://localhost/rest/department/$id/hello/?name=STuff
 ```
 
 
