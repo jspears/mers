@@ -7,8 +7,9 @@
     Mers is a plugin for express to expose mongoose finders as simple crud/rest operations.  The
     basic idea being you should just define your model/finders and the rest should be be magic.
 
+![build status](https://travis-ci.org/jspears/mers.svg)
 
-## Usage [usage]
+## Usage
 
 Install mers, mongoose, express and body-parser
 
@@ -27,25 +28,24 @@ Install mers, mongoose, express and body-parser
         Schema = mongoose.Schema,
         bodyParser = require('body-parser')
 
-    app.use(bodyParser.json({ type: 'application/*+json' }))
-
+    app.use(bodyParser.json())
+    app.use(bodyParser.urlencoded({ extended: true }));
     var SampleSchema = new Schema({
         name:String,
         age:Number
     });
 
     mongoose.model('sample', SampleSchema);
-
     var mers = require('mers');
     app.use('/rest', mers({uri:'mongodb://localhost/your_db'}).rest());
 
 ```
 Configuration options include:
 * `uri:uri://mongoose`  (as shown above)
-* `mongoose:mongoose` (your mongoose instance)
-* `[error][error]:function` (your custom error handler)
-* `responseStream:function` (your custom respost stream. See: lib/streams.js)
-* `transformer:function` (your custom transformer factory)
+* `mongoose:{mongoose}` (your mongoose instance)
+* `error:{function}` (your custom Error Handler)
+* `responseStream:{function}` (your custom respost stream. See: lib/streams.js)
+* `transformer:{function}` (your custom transformer factory)
 # `inject:{Nojector}` (custom nojector add resovlers, or whatever)
 
 ###If you had a schema such as
@@ -239,7 +239,7 @@ Occassionally you may want to do something like a double query within a finder. 
 ```
 
 
-### [Error Handling][error]
+### Error Handling ###
 To create a custom error handler
 
 ```javascript
@@ -266,7 +266,7 @@ that can't just be filtered.   Of course you can return nested nestings too...
 
 
 ###Returning an Object
-This one just returns an object, from /department/<id>/hello/name
+This one just returns an object, from /department/$id/hello/name
 
 ```javascript
 DepartmentSchema.methods.hello = function DepartmentSchema$hello(){
@@ -275,7 +275,7 @@ DepartmentSchema.methods.hello = function DepartmentSchema$hello(){
 ```
 
 ###Returning a Promise.
-This is returns a promise from /department/<id>/promises.  Really you just
+This is returns a promise from /department/$id/promises.  Really you just
 need to return an object with an then function.  So any promise library should work.
 
 ```javascript
@@ -287,7 +287,7 @@ DepartmentSchema.methods.promises = function (data){
 ```
 
 ### Returning a Query object.
-This is returns a query from /department/<id>/superDo
+This is returns a query from /department/$id/superDo
 
 ```javascript
 DepartmentSchema.methods.superDo = function DepartmentSchema$hello(data){
@@ -332,7 +332,7 @@ DepartmentSchema.static.byName = function DepartmentSchema$hello(query$name){
 works on instances to...
 
 ```
-url: http://localhost/rest/department/<id>/hello/?name=STuff
+url: http://localhost/rest/department/$id/hello/?name=STuff
 ```
 
 

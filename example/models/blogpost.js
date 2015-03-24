@@ -12,6 +12,7 @@ module.exports = function (m) {
     });
 
     var BlogPostSchema = new Schema({
+        owner:String,
         title: {
             type: String,
             match: new RegExp('^.{3,}$')
