@@ -43,10 +43,10 @@ Install mers, mongoose, express and body-parser
 ```
 Configuration options include:
 * `uri:uri://mongoose`  (as shown above)
-* `mongoose:mongoose` (your mongoose instance)
-* `[error][error]:function` (your custom error handler)
-* `responseStream:function` (your custom respost stream. See: lib/streams.js)
-* `transformer:function` (your custom transformer factory)
+* `mongoose:{mongoose}` (your mongoose instance)
+* `error:{function}` (your custom error handler)
+* `responseStream:{function}` (your custom respost stream. See: lib/streams.js)
+* `transformer:{function}` (your custom transformer factory)
 # `inject:{Nojector}` (custom nojector add resovlers, or whatever)
 
 ###If you had a schema such as
