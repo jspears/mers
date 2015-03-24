@@ -240,7 +240,7 @@ Occassionally you may want to do something like a double query within a finder. 
 ```
 
 
-### [Error Handling][error]
+### Error Handling
 To create a custom error handler
 
 ```javascript
