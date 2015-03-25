@@ -1,6 +1,6 @@
 {
   "name": "mers",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "private": false,
   "author": "Justin Spears <speajus@gmail.com>",
   "dependencies": {
